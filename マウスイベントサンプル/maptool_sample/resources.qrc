@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/maptool_sample" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
