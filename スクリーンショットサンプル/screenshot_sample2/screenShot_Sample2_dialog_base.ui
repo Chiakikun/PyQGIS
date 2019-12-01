@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScreenShotSample2DialogBase</class>
+ <widget class="QDialog" name="ScreenShotSample2DialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>308</width>
+    <height>117</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ScreenShot Sample2</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>画像保存先</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="saveDirPath">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>271</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="selectDir">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>28</y>
+     <width>21</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="execButton">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>70</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>実行</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="closeButton">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>70</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>閉じる</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>50</width>
+     <height>12</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>縮尺</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="scaleList">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>78</y>
+     <width>81</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>21</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>1:</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>selectDir</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenShotSample2DialogBase</receiver>
+   <slot>pushSelectDir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>293</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>223</x>
+     <y>11</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>execButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenShotSample2DialogBase</receiver>
+   <slot>pushExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>76</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>110</x>
+     <y>60</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenShotSample2DialogBase</receiver>
+   <slot>pushClose()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>89</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>pushSelectDir()</slot>
+  <slot>pushExec()</slot>
+  <slot>pushClose()</slot>
+ </slots>
+</ui>
