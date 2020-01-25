@@ -142,9 +142,16 @@ class MouseEventSample(qgis.gui.QgsMapTool):
 
         rLayer = self.iface.activeLayer()
         if type(rLayer) is qgis.core.QgsRasterLayer:
-            ident = rLayer.dataProvider().identify( self.toMapCoordinates(self.canvas.mouseLastXY()), qgis.core.QgsRaster.IdentifyFormatValue )
+            mousepos = self.canvas.mouseLastXY()
+            mappos = self.toMapCoordinates(mousepos)
+
+            ident = rLayer.dataProvider().identify( mappos, qgis.core.QgsRaster.IdentifyFormatValue ) # https://qgis.org/api/qgsraster_8h_source.html#l00057 ピクセル値を取得するみたいです
             if ident.isValid():
-                text = ", ".join(['{0:g}'.format(r) for r in ident.results().values() if r is not None] )
+                print('マウス位置:' + str(mousepos))
+                print('マップ位置:' + str(mappos))
+
+                values = ident.results().values()
+                text = ", ".join(['{0:g}'.format(r) for r in values if r is not None] ) # 複数取得することあるかなぁ？
             else:
                 text = "Non valid value"
             QToolTip.showText( self.canvas.mapToGlobal( self.canvas.mouseLastXY() ), text, self.canvas )
