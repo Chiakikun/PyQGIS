@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FeatureSelectExprSampleDialogBase</class>
+ <widget class="QDialog" name="FeatureSelectExprSampleDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>345</width>
+    <height>183</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FeatureSelectExpr Sample</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>70</y>
+     <width>50</width>
+     <height>12</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>クエリ式</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="execButton">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>140</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>実行</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancelButton">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>140</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>キャンセル</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="saveButton">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>140</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>gpkgで保存</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="queryEdit">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>221</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="testButton">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>90</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>テスト</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="fieldsBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>181</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>対象フィールド</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>testButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FeatureSelectExprSampleDialogBase</receiver>
+   <slot>testPush()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>267</x>
+     <y>96</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>42</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FeatureSelectExprSampleDialogBase</receiver>
+   <slot>savePush()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>146</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>101</x>
+     <y>119</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>execButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FeatureSelectExprSampleDialogBase</receiver>
+   <slot>execPush()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>163</x>
+     <y>150</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>217</x>
+     <y>124</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FeatureSelectExprSampleDialogBase</receiver>
+   <slot>cancelPush()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>295</x>
+     <y>144</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>332</x>
+     <y>120</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>queryEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>FeatureSelectExprSampleDialogBase</receiver>
+   <slot>queryChange()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>174</x>
+     <y>96</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>216</x>
+     <y>64</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>testPush()</slot>
+  <slot>savePush()</slot>
+  <slot>execPush()</slot>
+  <slot>cancelPush()</slot>
+  <slot>queryChange()</slot>
+ </slots>
+</ui>
