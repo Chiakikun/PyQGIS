@@ -78,7 +78,7 @@ class GetRasterValueSample:
 
 
     def initGui(self):
-        icon = QIcon(':/plugins/maptool_sample/icon.png')
+        icon = QIcon(':/plugins/getrastervalue_sample/icon.png')
         self.action = QAction(icon, self.tr(u'MapTool版サンプル'), self.iface.mainWindow())
         self.action.triggered.connect(self.execSample)
         self.action.setEnabled(True)

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  MapToolSample
@@ -98,11 +98,10 @@ class MapToolSample:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-        for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&MapTool Sample'),
-                action)
-            self.iface.removeToolBarIcon(action)
+        self.iface.removePluginMenu(
+            self.tr(u'&MapTool Sample'),
+            self.action)
+        self.iface.removeToolBarIcon(self.action)
 
 
     def unsetTool(self, tool):
