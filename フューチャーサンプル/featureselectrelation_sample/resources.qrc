@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/featureselectrelation_sample" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
