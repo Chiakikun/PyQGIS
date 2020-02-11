@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  ScreenShotSample3Dialog
@@ -88,12 +88,16 @@ class ScreenShotSample3Dialog(QtWidgets.QDialog, FORM_CLASS):
     def onSelectedUpdate(self, selectedLayers):
         self.selectedLayers = selectedLayers
 
+        msg = str(len(self.selectedLayers)) + '個の要素が選択されました。'
+        self.selectedLayerNum.setText(msg)
+
 
     def clickSelectLayerButton(self):
         self.multiselect_dialog = MultiSelectDialog(self)
         self.multiselect_dialog.setModal(True)
         self.multiselect_dialog.update.connect(self.onSelectedUpdate)
 
+        self.multiselect_dialog.setModal(True)
         self.multiselect_dialog.show()
 
 
