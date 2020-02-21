@@ -21,7 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -33,96 +33,52 @@ import os.path
 import qgis.core;
 
 class MapToolSample:
-    """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
-        """Constructor.
 
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.canvas = self.iface.mapCanvas()
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
-        # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'MapToolSample_{}.qm'.format(locale))
 
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
-
-        # Declare instance attributes
-        self.menu = self.tr(u'&MapTool Sample')
-
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('MapToolSample', message)
+        # プラグインの登録場所
+        self.menu_pos = 'サンプル マウス選択'
+        # キャンバスウィンドウ上でのマウスイベントの設定
+        self.mouseEventSample = MouseEventSample(self.iface, self.canvas)
+        # このサンプル以外のアイコンを押した場合の設定
+        self.canvas.mapToolSet.connect(self.unsetTool)
 
 
     def initGui(self):
-        icon = QIcon(':/plugins/maptool_sample/icon.png')
-        self.action = QAction(icon, self.tr(u'MapTool版サンプル'), self.iface.mainWindow())
-        self.action.triggered.connect(self.execSample)
-        self.action.setEnabled(True)
-        self.action.setCheckable(True)
-        self.action.setEnabled(True)
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(self.menu, self.action)
+        icon = QIcon(self.plugin_dir+'/icon.png')
+        self.action = QAction(icon, 'MapTool版サンプル', self.iface.mainWindow())
+        self.action.triggered.connect(self.execSample) # アイコンを押下した時に実行されるメソッドを登録
+        self.action.setCheckable(True)                 # Trueだとアイコンを押下したら次に押下するまで凹んだままになる。
+        self.iface.addToolBarIcon(self.action)         # ツールバーにアイコンを表示させたいなら#外して
+        self.iface.addPluginToMenu(self.menu_pos, self.action)
         
-        # このサンプル実行中かな?
-        self.isrun = False
-
-        # 追加 キャンバス上のマウスイベント設定
-        self.mouseEventSample = MouseEventSample(self.iface, self.iface.mapCanvas())
-        self.iface.mapCanvas().mapToolSet.connect(self.unsetTool)
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-        self.iface.removePluginMenu(
-            self.tr(u'&MapTool Sample'),
-            self.action)
+        self.iface.removePluginMenu(self.menu_pos, self.action)
         self.iface.removeToolBarIcon(self.action)
 
 
+    # このサンプル以外のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
-        try:
-        # 実行中にこのサンプル以外のアイコンを押した場合
-            if not isinstance(tool, MouseEventSample) and self.isrun:
-                self.isrun = False
-                self.action.setChecked(False)
-        except Exception:
-            pass
+        if not isinstance(tool, MouseEventSample):
+            self.action.setChecked(False)
 
 
     def execSample(self):
-        if self.isrun:
-            self.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
-            self.iface.mapCanvas().setMapTool(self.previousMapTool)
-            self.isrun = False
-        else:
+        if self.action.isChecked():
             self.previousMapTool = qgis.utils.iface.mapCanvas().mapTool()
-            self.iface.mapCanvas().setMapTool(self.mouseEventSample)
-            self.isrun = True
+            self.canvas.setMapTool(self.mouseEventSample)
+        else:
+            self.canvas.unsetMapTool(self.mouseEventSample)
+            self.canvas.setMapTool(self.previousMapTool)
+            self.action.setChecked(False)
 
         
 class MouseEventSample(qgis.gui.QgsMapTool):
