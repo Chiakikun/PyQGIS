@@ -55,7 +55,7 @@ class MapToolSample:
         self.action = QAction(icon, 'MapTool版サンプル', self.iface.mainWindow())
         self.action.triggered.connect(self.execSample) # アイコンを押下した時に実行されるメソッドを登録
         self.action.setCheckable(True)                 # Trueだとアイコンを押下したら次に押下するまで凹んだままになる。
-        self.iface.addToolBarIcon(self.action)         # ツールバーにアイコンを表示させたいなら#外して
+        #self.iface.addToolBarIcon(self.action)         # ツールバーにアイコンを表示させたいなら#外して
         self.iface.addPluginToMenu(self.menu_pos, self.action)
         
 
@@ -73,7 +73,7 @@ class MapToolSample:
 
     def execSample(self):
         if self.action.isChecked():
-            self.previousMapTool = qgis.utils.iface.mapCanvas().mapTool()
+            self.previousMapTool = self.canvas.mapTool()
             self.canvas.setMapTool(self.mouseEventSample)
         else:
             self.canvas.unsetMapTool(self.mouseEventSample)
