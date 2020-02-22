@@ -8,7 +8,7 @@
                               -------------------
         begin                : 2019-11-19
         git sha              : $Format:%H$
-        copyright            : (C) 2019 by unemployed
+        copyright            : (C) 2019 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
