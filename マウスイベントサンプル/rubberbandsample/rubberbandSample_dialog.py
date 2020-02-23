@@ -53,7 +53,7 @@ class RubberBandSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
             self.canvas.unsetMapTool(self.mouseEventSample)
 
-            self.canvas.scene().removeItem(self.myRubberBand)
+            self.canvas.scene().removeItem(self.myRubberBand) # 描画中の地物を消す
 
             self.canvas.mapToolSet.disconnect(self.unsetTool)
             self.pushButton_Exec.setChecked(False)
@@ -123,11 +123,13 @@ class RubberBandSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
             # 作成したレコードをレイヤに追加
             self.vlyr.dataProvider().addFeatures([record])
+            self.vlyr.updateExtents() # これが無いと『レイヤの領域にズーム』した時に、レイヤの最初のオブジェクト部分しかズームされない
 
             # キャンバスにオブジェクトを表示する      
             qgis.core.QgsProject.instance().addMapLayers([self.vlyr])
             #self.canvas.setExtent(geomP.boundingBox()) #パンしたい場合は#外して
-            self.canvas.refresh()
+            self.canvas.refreshAllLayers()
 
+            self.canvas.scene().removeItem(self.myRubberBand) # ラバーバンドで描いた図形はもう必要ないので消す
             self.myRubberBand = None
 
