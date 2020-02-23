@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2019-11-19
         git sha              : $Format:%H$
-        copyright            : (C) 2019 by unemployed
+        copyright            : (C) 2019 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,14 +21,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-import os
-
+from qgis.PyQt import QtCore
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
+import os
 import qgis.core
-from qgis.PyQt import QtCore
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -36,36 +34,53 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class MapToolEmitPointSampleDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
-        """Constructor."""
+
+    def __init__(self, iface, parent=None):
         super(MapToolEmitPointSampleDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint(qgis.utils.iface.mapCanvas())
-        
-    def showEvent(self, e):
-        self.isrun = False
+        self.canvas = iface.mapCanvas()
+        # キャンバスウィンドウ上でのマウスイベントの設定
+        self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint(self.canvas)
 
-    def pushExec(self):
-        self.mouseEventSample.canvasClicked.connect(self.mouseClick)
-        self.mouseEventSample.canvasMoveEvent = self.canvasMoveEvent        
-        qgis.utils.iface.mapCanvas().setMapTool(self.mouseEventSample)
-        self.isrun = True
+
+    def unsetTool(self):
+        try:
+            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
+            self.canvas.unsetMapTool(self.mouseEventSample)
+
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.pushButton_Exec.setChecked(False)
+            self.pushButton_Exec.setText('実行')
+
+        except: # 一度もpushExecを通らずにこの関数が呼ばれた場合のため
+            pass
+
+
+    def closeEvent(self, e):
+        self.unsetTool()
+ 
 
     def pushClose(self):
-        if self.isrun:
-            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
-            qgis.utils.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
-
         self.close()
 
+
+    def pushExec(self, checked):
+        if checked == True:
+            self.mouseEventSample.canvasClicked.connect(self.mouseClick)
+            self.mouseEventSample.canvasMoveEvent = self.canvasMoveEvent        
+            self.canvas.setMapTool(self.mouseEventSample)
+
+            # このサンプル以外のアイコンを押した場合に、凹んでいる実行ボタンを元に戻すため
+            self.canvas.mapToolSet.connect(self.unsetTool)
+            self.pushButton_Exec.setText('実行中')
+        else:
+            self.unsetTool()
+
+
     def canvasMoveEvent(self, event):
-        print('マウス移動:' + str(qgis.utils.iface.mapCanvas().getCoordinateTransform().toMapCoordinates(event.pos())))
+        print('マウス移動:' + str(self.canvas.getCoordinateTransform().toMapCoordinates(event.pos())))
+
  
     def mouseClick(self, currentPos, clickedButton ):
         if clickedButton == QtCore.Qt.LeftButton: 

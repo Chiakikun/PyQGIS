@@ -25,6 +25,9 @@
    <property name="text">
     <string>実行</string>
    </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="pushButton_Close">
    <property name="geometry">
@@ -44,7 +47,7 @@
  <connections>
   <connection>
    <sender>pushButton_Exec</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>MapToolEmitPointSampleDialogBase</receiver>
    <slot>pushExec()</slot>
    <hints>
