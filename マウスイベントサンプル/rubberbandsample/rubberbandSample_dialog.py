@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2019-11-23
         git sha              : $Format:%H$
-        copyright            : (C) 2019 by unemployed
+        copyright            : (C) 2019 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,15 +21,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-import qgis.core
-from qgis.PyQt.QtGui import QColor
 from qgis.PyQt import QtCore, QtGui
-
-import os
-
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
+from qgis.PyQt.QtGui import QColor
+import os
+import qgis.core
 from datetime import datetime
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -38,94 +36,98 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class RubberBandSampleDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
-        """Constructor."""
+    def __init__(self, iface, parent=None):
         super(RubberBandSampleDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        # Create new virtual layer 
+        self.canvas = iface.mapCanvas()
+
+        # 仮想レイヤ作成
         self.vlyr = qgis.core.QgsVectorLayer("Polygon?&crs=epsg:4326&field=name:string&field=size:double", "サンプルレイヤ", "memory")
+        # キャンバスウィンドウ上でのマウスイベントの設定
+        self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint(self.canvas)
 
-        self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint( qgis.utils.iface.mapCanvas() )
 
+    def unsetTool(self):
+        try:
+            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
+            self.canvas.unsetMapTool(self.mouseEventSample)
 
-    def showEvent(self, e):
-        self.isrun = False
-        self.myRubberBand = None
+            self.canvas.scene().removeItem(self.myRubberBand)
+
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.pushButton_Exec.setChecked(False)
+            self.pushButton_Exec.setText('実行')
+
+        except: # 一度もpushExecを通らずにこの関数が呼ばれた場合のため
+            pass
+
 
     def closeEvent(self, e):
-        if self.isrun:
-            self.isrun = False
-            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
-
-        qgis.utils.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
-
-        if not self.myRubberBand == None:
-            qgis.utils.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-            self.myRubberBand = None
-
-    def pushExec(self):
-        self.mouseEventSample.canvasClicked.connect(self.mouseClick)
-        self.mouseEventSample.canvasMoveEvent = self.canvasMoveEvent        
-        qgis.utils.iface.mapCanvas().setMapTool(self.mouseEventSample)
-        self.isrun = True
+        self.unsetTool()
+ 
 
     def pushClose(self):
         self.close()
 
+
+    def pushExec(self, checked):
+        if checked == True:
+            self.mouseEventSample.canvasClicked.connect(self.mouseClick)
+            self.mouseEventSample.canvasMoveEvent = self.canvasMoveEvent        
+            self.canvas.setMapTool(self.mouseEventSample)
+
+            # このサンプル以外のアイコンを押した場合に、凹んでいる実行ボタンを元に戻すため
+            self.canvas.mapToolSet.connect(self.unsetTool)
+            self.pushButton_Exec.setText('実行中')
+
+            self.myRubberBand = None
+        else:
+            self.unsetTool()
+
+
     def canvasMoveEvent(self, event):
-        # 一度も左ボタンをクリックしてない
-        if self.myRubberBand == None:
+        if self.myRubberBand == None: # 一度も左ボタンをクリックしてない時にこのメソッドが呼ばれた場合
             return
 
-        pos = event.pos()
-        point = qgis.utils.iface.mapCanvas().getCoordinateTransform().toMapCoordinates(pos)
-        point_count = self.myRubberBand.numberOfVertices()
-        if point_count == 0:
-            return
+        # 地物の描画中に、マウスカーソルを追って形状が変わるように
+        point = self.canvas.getCoordinateTransform().toMapCoordinates(event.pos())
         self.myRubberBand.movePoint(point)
 
 
     def mouseClick(self, currentPos, clickedButton ):
-        if clickedButton == QtCore.Qt.LeftButton and self.myRubberBand == None: #len(self.coordinates) == 0: 
-            # create the polygon rubber band associated to the current canvas             
-            self.myRubberBand = qgis.gui.QgsRubberBand( qgis.utils.iface.mapCanvas(), qgis.core.QgsWkbTypes.PolygonGeometry )
-            # set rubber band style
-            color = QColor(78, 97, 114)
-            color.setAlpha(190)
-            self.myRubberBand.setColor(color)
-            #Draw rubberband
+        # 地物の最初の一点目
+        if clickedButton == QtCore.Qt.LeftButton and self.myRubberBand == None:
+            self.myRubberBand = qgis.gui.QgsRubberBand( self.canvas, qgis.core.QgsWkbTypes.PolygonGeometry )
+            self.myRubberBand.setColor( QColor(78, 97, 114, 190) )
             self.myRubberBand.addPoint( qgis.core.QgsPointXY(currentPos) )
 
+        # 地物の二点目以降
         if clickedButton == QtCore.Qt.LeftButton and self.myRubberBand.numberOfVertices() > 0:
             self.myRubberBand.addPoint( qgis.core.QgsPointXY(currentPos) )
 
+        # __init__で作成した仮想レイヤのレコード作成
         if clickedButton == QtCore.Qt.RightButton:
-            # フューチャー作成
+            # フィールド設定
             qf = qgis.core.QgsFields()
             for field in self.vlyr.fields():
                 qf.append(qgis.core.QgsField(str(field.name()), typeName=field.typeName()))
-            poly = qgis.core.QgsFeature(qf) 
+            record = qgis.core.QgsFeature(qf) 
 
-            # easier solution using simply the geometry of self.myRubberBand
+            # ラバーバンドで作成した地物をセットする
             geomP = self.myRubberBand.asGeometry() 
-            poly.setGeometry(geomP) 
+            record.setGeometry(geomP) 
 
-            # add feature
-            # set attributes
-            poly.setAttributes([str(datetime.now()), geomP.area()])
-            self.vlyr.dataProvider().addFeatures([poly])
-            self.vlyr.updateExtents() # これが無いと『レイヤの領域にズーム』した時に、レイヤの最初のオブジェクト部分しかズームされない
+            # 属性をセットする
+            record.setAttributes([str(datetime.now()), geomP.area()])
 
-            # キャンバスにオブジェクトを追加して、パンする。setExtentが無いと、画面に表示されない(少しでも画面動かせば表示されるので)      
+            # 作成したレコードをレイヤに追加
+            self.vlyr.dataProvider().addFeatures([record])
+
+            # キャンバスにオブジェクトを表示する      
             qgis.core.QgsProject.instance().addMapLayers([self.vlyr])
-            qgis.utils.iface.mapCanvas().setExtent(geomP.boundingBox())
-            qgis.utils.iface.mapCanvas().refresh()
+            #self.canvas.setExtent(geomP.boundingBox()) #パンしたい場合は#外して
+            self.canvas.refresh()
 
-            self.close()
+            self.myRubberBand = None
 
