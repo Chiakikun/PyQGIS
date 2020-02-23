@@ -43,7 +43,7 @@ class MapToolSample:
         self.plugin_dir = os.path.dirname(__file__)
 
         # プラグインの登録場所
-        self.menu_pos = 'サンプル マウス選択'
+        self.menu_pos = 'サンプル マウスイベント'
         # キャンバスウィンドウ上でのマウスイベントの設定
         self.mouseEventSample = MouseEventSample(self.iface, self.canvas)
         # このサンプル以外のアイコンを押した場合の設定

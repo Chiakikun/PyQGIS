@@ -45,7 +45,7 @@ class MapToolEmitPointSample:
         self.plugin_dir = os.path.dirname(__file__)
 
         # プラグインの登録場所
-        self.menu_pos = 'サンプル マウス選択'
+        self.menu_pos = 'サンプル マウスイベント'
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
