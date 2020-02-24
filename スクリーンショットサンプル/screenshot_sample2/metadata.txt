@@ -5,15 +5,14 @@
 [general]
 name=ScreenShot Sample2
 qgisMinimumVersion=3.0
-description=少しマシになったスクリーンショットサンプルです。
+description=ベクタレイヤをフューチャー毎にスクリーンショットで保存するサンプルの改良版。
 version=0.1
-author=Unemployed
+author=Chiakikun
 email=chiakikungm@gmail.com
 
-about=ScreenShotSampleをもう少し格好良くしたサンプルです。
 
-tracker=http://bugs
-repository=http://repo
+#tracker=http://bugs
+#repository=http://repo
 # End of mandatory metadata
 
 # Recommended items:
@@ -23,9 +22,9 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python,sample
 
-homepage=http://homepage
+#homepage=http://homepage
 category=Plugins
 icon=icon.png
 # experimental flag
