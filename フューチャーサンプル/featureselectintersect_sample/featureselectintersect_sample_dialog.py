@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2020-02-11
         git sha              : $Format:%H$
-        copyright            : (C) 2020 by unemployed
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,15 +21,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-import os
-
+from qgis.PyQt import QtCore
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
+import os
 import qgis.core
-import qgis.utils
-from qgis.PyQt.QtWidgets import QMessageBox
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -38,14 +36,11 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class FeatureSelectIntersectSampleDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
-        """Constructor."""
         super(FeatureSelectIntersectSampleDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        self.iface = qgis.utils.iface
+        self.canvas = self.iface.mapCanvas()
 
 
     def pushCancel(self):
@@ -55,26 +50,24 @@ class FeatureSelectIntersectSampleDialog(QtWidgets.QDialog, FORM_CLASS):
     def showEvent(self, e):
         self.comboSelectLayer.clear()
         self.comboTargetLayer.clear()
+
         layers = qgis.core.QgsProject.instance().mapLayers().values()
         for layer in layers:
-            if layer.type() != 0: continue;
+            if type(layer) is not qgis.core.QgsVectorLayer: continue
             self.comboSelectLayer.addItem(layer.name())
             self.comboTargetLayer.addItem(layer.name())
 
 
     def changeSelect(self, string):
-        preactive = qgis.utils.iface.activeLayer()
-        try:
-            self.selectLayer = qgis.core.QgsProject.instance().mapLayersByName(self.comboSelectLayer.currentText())[0]
-            qgis.utils.iface.setActiveLayer(self.selectLayer)
-            qgis.utils.iface.zoomToActiveLayer() 	
-        finally:
-            qgis.utils.iface.setActiveLayer(preactive)
+        self.selectLayer = qgis.core.QgsProject.instance().mapLayersByName(self.comboSelectLayer.currentText())[0]
 
 
     def changeTarget(self, string):
         self.targetLayer = qgis.core.QgsProject.instance().mapLayersByName(self.comboTargetLayer.currentText())[0]
-        qgis.utils.iface.setActiveLayer(self.targetLayer)
+        
+        # このレイヤのフューチャーに交差するself.selectLayerのフューチャーを取得したいので、
+        # self.targetLayerをアクティブにする（マウス選択できるように）
+        self.iface.setActiveLayer(self.targetLayer)
 
 
     def pushExec(self):
@@ -84,16 +77,17 @@ class FeatureSelectIntersectSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
         features = self.targetLayer.selectedFeatures()
         if len(features) == 0:
-            print('フューチャーを選択してください')
+            QMessageBox.about(None, '警告', 'フューチャーを一つ選択してください')
             return
-  
+
+        self.selectLayer.removeSelection()
         areas = []
         inGeom = features[0].geometry()
-        cands = self.selectLayer.getFeatures(qgis.core.QgsFeatureRequest().setFilterRect(inGeom.boundingBox()))
+        # 矩形で大まかに取得してから、インターセクトで細かく取得する
+        cands = self.selectLayer.getFeatures(qgis.core.QgsFeatureRequest().setFilterRect(inGeom.boundingBox())) # 「https://qgis.org/api/classQgsFeatureRequest.html」のexample
         for sf in cands:
             if inGeom.intersects(sf.geometry()):
                 areas.append(sf.id())
-
         self.selectLayer.select(areas)
 
         res = qgis.core.QgsVectorFileWriter.writeAsVectorFormat(self.selectLayer, 'd:\\' + self.selectLayer.name() + '.shp', 'System', self.selectLayer.crs(), 'ESRI Shapefile', True)

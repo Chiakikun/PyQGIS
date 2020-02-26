@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2020-01-26
         git sha              : $Format:%H$
-        copyright            : (C) 2020 by unemployed
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,15 +21,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-import os
-
+from qgis.PyQt import QtCore
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.PyQt.QtCore import QSettings
+
+import os
 import qgis.core
-import qgis.utils
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -37,53 +36,40 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class FeatureSelectExprSampleDialog(QtWidgets.QDialog, FORM_CLASS):
+
     def __init__(self, parent=None):
-        """Constructor."""
         super(FeatureSelectExprSampleDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
         self.iface = qgis.utils.iface
-
-    def showEvent(self, e):
-        self.execButton.setEnabled(False)
-        self.saveButton.setEnabled(False)
-        self.layer = self.iface.activeLayer()
-        self.layer.removeSelection()
-
-        self.fieldsBox.clear()
-        for s in self.layer.fields():
-            self.fieldsBox.addItem(s.name())
-
-        self.oldsetting = QSettings().value("/Qgis/dockAttributeTable")
-
-
-    def closeEvent(self, e):
-        QSettings().setValue("/Qgis/dockAttributeTable", self.oldsetting)
-        pass
+        self.canvas = self.iface.mapCanvas()
 
 
     def cancelPush(self):
         self.close()
 
 
-    def testPush(self):
-        self.query = ''
+    def closeEvent(self, e):
+        QSettings().setValue("/Qgis/dockAttributeTable", self.oldsetting)
 
-        query = '"' + self.fieldsBox.currentText() + '" ' + self.queryEdit.text()
 
-        features = self.layer.getFeatures(qgis.core.QgsFeatureRequest().setFilterExpression(query))
-        if len(list(features)) == 0:
+    def showEvent(self, e):
+        self.layer = self.iface.activeLayer()
+        if type(self.layer) is not qgis.core.QgsVectorLayer:
+            QMessageBox.about(None, '警告', 'ベクタレイヤを選択してから実行してください')
             return
 
-        self.query = query
-        QtWidgets.QMessageBox.information(None, '情報', 'エラーなし')
-        self.execButton.setEnabled(True)
-        self.saveButton.setEnabled(True)
+        self.execButton.setEnabled(False)
+        self.saveButton.setEnabled(False)
+
+        self.layer.removeSelection()
+
+        # コンボボックスにフィールド名を設定する
+        self.fieldsBox.clear()
+        for s in self.layer.fields():
+            self.fieldsBox.addItem(s.name())
+
+        self.oldsetting = QSettings().value("/Qgis/dockAttributeTable")  # 一時退避
 
 
     def queryChange(self):
@@ -92,12 +78,29 @@ class FeatureSelectExprSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         self.saveButton.setEnabled(False)
 
 
+    def testPush(self):
+        self.query = ''
+
+        # queryでフューチャーが選択できるか
+        query = '"' + self.fieldsBox.currentText() + '" ' + self.queryEdit.text()
+        features = self.layer.getFeatures(qgis.core.QgsFeatureRequest().setFilterExpression(query))
+        if len(list(features)) == 0:
+            QMessageBox.information(None, '警告', '指定したクエリではフューチャーを抽出できませんでした')
+            return
+        # できました
+        self.query = query
+        QtWidgets.QMessageBox.information(None, '情報', 'エラーなし')
+        self.execButton.setEnabled(True)
+        self.saveButton.setEnabled(True)
+
+
     def execPush(self):
-        QSettings().setValue("/Qgis/dockAttributeTable", True)
-        self.layer.selectByExpression(self.query)
-        self.iface.showAttributeTable(self.layer, self.query)
+        QSettings().setValue("/Qgis/dockAttributeTable", True) # 属性テーブルをドッキング状態で表示させる
+        self.layer.selectByExpression(self.query)              # 式で抽出できるフューチャーを選択
+        self.iface.showAttributeTable(self.layer, self.query)  # 式で抽出できるフューチャーの属性のみテーブルに表示
+
 
     def savePush(self):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(None, "ファイルを保存します", "", "GeoPackage (*.gpkg)")
         if path:
-            qgis.core.QgsVectorFileWriter.writeAsVectorFormat(self.layer, path, "System", onlySelected=True)
+            qgis.core.QgsVectorFileWriter.writeAsVectorFormat(self.layer, path, "System", onlySelected=True) # 選択しているフューチャーのみ保存

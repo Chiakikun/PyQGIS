@@ -8,7 +8,7 @@
                               -------------------
         begin                : 2020-01-26
         git sha              : $Format:%H$
-        copyright            : (C) 2020 by unemployed
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,7 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
@@ -29,76 +29,36 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from .resources import *
 
 import os.path
-
 import qgis.core;
-import qgis.gui;
 
 class FeatureSelectSample:
-    """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
-        """Constructor.
 
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.canvas = self.iface.mapCanvas()
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
-        # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'FeatureSelectSample_{}.qm'.format(locale))
 
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
-
-        # Declare instance attributes
-        self.menu = self.tr(u'&FeatureSelect Sample')
-
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('FeatureSelectSample', message)
+        # プラグインの登録場所
+        self.menu_pos = 'サンプル フューチャー選択'
+        # このサンプル以外のアイコンを押した場合の設定
+        self.canvas.mapToolSet.connect(self.unsetTool)
 
 
     def initGui(self):
-        icon = QIcon(':/plugins/featureselect_sample/icon.png')
-        self.action = QAction(icon, self.tr(u'フューチャー選択サンプル'), self.iface.mainWindow())
-        self.action.triggered.connect(self.execSample)
-        self.action.setEnabled(True)
-        self.action.setCheckable(True)
-        self.action.setEnabled(True)
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(self.menu, self.action)
-        
-        # このサンプル実行中かな?
-        self.isrun = False
+        icon = QIcon(self.plugin_dir+'/icon.png')
+        self.action = QAction(icon, '一つ選択→属性編集', self.iface.mainWindow())
+        self.action.triggered.connect(self.execSample) # アイコンを押下した時に実行されるメソッドを登録
+        self.action.setCheckable(True)                 # Trueだとアイコンを押下したら次に押下するまで凹んだままになる。
+        #self.iface.addToolBarIcon(self.action)         # ツールバーにアイコンを表示させたいなら#外して
+        self.iface.addPluginToMenu(self.menu_pos, self.action)
 
 
-    def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
-        self.iface.removePluginMenu(
-            self.tr(u'&FeatureSelect Sample'),
-            self.action)
-        self.iface.removeToolBarIcon(self.action)
+    # このサンプル以外のアイコンが押された場合、アイコンを元の状態に戻す
+    def unsetTool(self, tool):
+        self.action.setChecked(False)
 
 
     def exitFunc(self):
@@ -109,29 +69,28 @@ class FeatureSelectSample:
         except Exception:
             pass
         
-        self.iface.mapCanvas().setMapTool(self.previousMapTool)
+        self.canvas.setMapTool(self.previousMapTool)
         self.action.setChecked(False)
-        self.isrun = False
 
 
     def execSample(self):
-        if self.isrun:
-            self.exitFunc()
-
-        else:
+        if self.action.isChecked():
             self.layer = self.iface.activeLayer()
 
-            if (self.layer == None) or (type(self.layer) is not qgis._core.QgsVectorLayer):
+            if (self.layer == None) or (type(self.layer) is not qgis.core.QgsVectorLayer):
                 QMessageBox.about(None, '警告', 'ベクタレイヤを選択してから実行してください')
                 self.action.setChecked(False)
                 return
 
-            self.iface.layerTreeView().currentLayerChanged.connect(self.changeLayer)
-            self.iface.actionSelect().trigger()
-            self.layer.selectionChanged.connect(self.editAttribute)
-            self.previousMapTool = qgis.utils.iface.mapCanvas().mapTool()
-            self.isrun = True
+            self.iface.layerTreeView().currentLayerChanged.connect(self.changeLayer) # アクティブレイヤが変更された時に呼ぶメソッドを登録
+            self.iface.actionSelect().trigger()                                      # ツールバーの「地物選択」のアイコンが押された状態になる
+            self.layer.selectionChanged.connect(self.editAttribute)                  # 選択フューチャーを変更した時に呼ぶメソッドを登録
+            self.previousMapTool = self.canvas.mapTool()
+        else:
+            self.exitFunc()
 
+
+    # フューチャーを一つ選択した時に呼ばれる。
     def editAttribute(self):
         features = self.layer.selectedFeatures()
 
@@ -142,28 +101,30 @@ class FeatureSelectSample:
             QMessageBox.information(None, '警告', 'フューチャーを1つ選択してください')
             return
 
-        self.layer.startEditing()
-        attdlg = self.iface.getFeatureForm(self.layer, features[0])
-        attdlg.setMode(qgis.gui.QgsAttributeEditorContext.SingleEditMode)
-        attdlg.finished.connect(self.commitEdit)
-        attdlg.show()
+        self.layer.startEditing() # レイヤを編集状態にする
+
+        # 選択しているフューチャーの属性フォーム表示
+        self.attdlg = self.iface.getFeatureForm(self.layer, features[0])
+        self.attdlg.setMode(qgis.gui.QgsAttributeEditorContext.SingleEditMode)
+        self.attdlg.finished.connect(self.commitEdit)
+        self.attdlg.show()
+
 
     def commitEdit(self, result):
         if result == 1:
             self.layer.commitChanges()
         else:
             self.layer.rollBack()
+        self.attdlg.finished.disconnect(self.commitEdit)
 
 
+    # レイヤウィンドウでレイヤを選択したときに呼ばれる
     def changeLayer(self, layer):
-        self.layer.removeSelection()
-
-        if (layer == None) or (type(layer) is not qgis._core.QgsVectorLayer):
-            self.exitFunc()
+        if (layer == None) or (type(layer) is not qgis.core.QgsVectorLayer):
             return
 
+        # 選択前のレイヤにつながっていたeditAttributeを切って、選択後のレイヤにつなげる
+        self.layer.removeSelection()
         self.layer.selectionChanged.disconnect(self.editAttribute)
-
         self.layer = layer
         self.layer.selectionChanged.connect(self.editAttribute)
-
