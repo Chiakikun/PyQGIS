@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2020-02-03
         git sha              : $Format:%H$
-        copyright            : (C) 2020 by unemployed
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -21,14 +21,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-import os
-
+from qgis.PyQt import QtCore
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-
-import qgis.core
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from PyQt5.Qt import QSettings
+import os
+import qgis.core
 
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -37,15 +36,13 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
+
     def __init__(self, parent=None):
-        """Constructor."""
         super(FeatureSelectRelationSampleDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        self.iface = self.iface
+        self.canvas = self.iface.mapCanvas()
 
 
     def pushCancel(self):
@@ -64,7 +61,7 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             pass
 
         QSettings().setValue("/Qgis/attributeTableBehavior", self.oldsetting)
-        self.close()
+        self.pushButton.setChecked(False)
 
 
     def showEvent(self, e):
@@ -77,11 +74,10 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         self.comboChildLayer.clear()
         layers = qgis.core.QgsProject.instance().mapLayers().values()
         for layer in layers:
-            if layer.type() != 0: continue;
+            if type(layer) is not qgis.core.QgsVectorLayer: continue
             self.comboParentLayer.addItem(layer.name())
             self.comboChildLayer.addItem(layer.name())
 
-        self.pushButton.setChecked(False)
 
     def changeParent(self, string):
         if self.comboParentLayer.currentText() == '': return
@@ -102,7 +98,7 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
     def pushExec(self, checked):
 
         if checked == True:
-            qgis.utils.iface.actionSelect().trigger()
+            self.iface.actionSelect().trigger()
 
             # リレーションをここで張って...
             self.rel = qgis.core.QgsRelation()
@@ -114,11 +110,11 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             qgis.core.QgsProject.instance().relationManager().addRelation(self.rel)
 
             self.parentLayer.selectionChanged.connect(self.showChildren)
-            qgis.utils.iface.setActiveLayer(self.parentLayer)
+            self.iface.setActiveLayer(self.parentLayer)
 
         else:
-            try: # 2回目以降に実行したとき、何故かここを通ってしまうので...
-                qgis.utils.iface.actionSelect().setChecked(False)
+            try: # 終了時にボタンを押したままだとここを通ってしまうので...
+                self.iface.actionSelect().setChecked(False)
 
                 # リレーションを削除
                 qgis.core.QgsProject.instance().relationManager().removeRelation(self.rel)
@@ -141,9 +137,9 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         for c in self.rel.getRelatedFeatures(features[0]):
             child.select(c.id())
 
-        selectedlayer = qgis.utils.iface.activeLayer()
+        selectedlayer = self.iface.activeLayer()
         try:
-            qgis.utils.iface.setActiveLayer(child)
-            qgis.utils.iface.mainWindow().findChild(QtWidgets.QAction, 'mActionOpenTable' ).trigger()
+            self.iface.setActiveLayer(child)
+            self.iface.mainWindow().findChild(QtWidgets.QAction, 'mActionOpenTable' ).trigger()
         finally:
-            qgis.utils.iface.setActiveLayer(selectedlayer)
+            self.iface.setActiveLayer(selectedlayer)
