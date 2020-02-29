@@ -55,13 +55,6 @@ class ScreenShotSample3Dialog(QtWidgets.QDialog, FORM_CLASS):
         self.selectedLayers = []
 
 
-    def onSelectedUpdate(self, selectedLayers):
-        self.selectedLayers = selectedLayers
-
-        msg = str(len(self.selectedLayers)) + '個の要素が選択されました。'
-        self.selectedLayerNum.setText(msg)
-
-
     def clickSelectLayerButton(self):
         self.multiselect_dialog = MultiSelectDialog(self)
         self.multiselect_dialog.setModal(True)
@@ -71,21 +64,28 @@ class ScreenShotSample3Dialog(QtWidgets.QDialog, FORM_CLASS):
         self.multiselect_dialog.show()
 
 
+    def onSelectedUpdate(self, selectedLayers):
+        self.selectedLayers = selectedLayers
+
+        msg = str(len(self.selectedLayers)) + '個の要素が選択されました。'
+        self.selectedLayerNum.setText(msg)
+
+
     def exportMap(self):
-        qgis.utils.iface.setActiveLayer(self.layer)
-        qgis.utils.iface.mapCanvas().saveAsImage('d:/' + self.iface.activeLayer().name() + '.png')
+        self.iface.setActiveLayer(self.layer)
+        self.canvas.saveAsImage('d:/' + self.iface.activeLayer().name() + '.png')
 
         if len(self.selectedLayers) > self.count:
             self.setNextFeatureExtent()
         else:
-            qgis.utils.iface.mapCanvas().mapCanvasRefreshed.disconnect( self.exportMap )
+            self.canvas.mapCanvasRefreshed.disconnect( self.exportMap )
             self.close()
 
 
     def setNextFeatureExtent(self):
         self.layer = qgis.core.QgsProject.instance().mapLayersByName(self.selectedLayers[self.count])[0]
-        qgis.utils.iface.setActiveLayer(self.layer)
-        qgis.utils.iface.zoomToActiveLayer() 	
+        self.iface.setActiveLayer(self.layer)
+        self.iface.zoomToActiveLayer() 	
 
         self.count += 1
 
@@ -94,7 +94,7 @@ class ScreenShotSample3Dialog(QtWidgets.QDialog, FORM_CLASS):
         if len(self.selectedLayers) == 0: return
 
         self.count = 0    
-        qgis.utils.iface.mapCanvas().mapCanvasRefreshed.connect( self.exportMap )
+        self.canvas.mapCanvasRefreshed.connect( self.exportMap )
         self.setNextFeatureExtent()
 
         self.close()
