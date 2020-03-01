@@ -43,8 +43,8 @@ class FeatureSelectSample:
 
         # プラグインの登録場所
         self.menu_pos = 'サンプル フューチャー選択'
-        # このサンプル以外のアイコンを押した場合の設定
-        self.canvas.mapToolSet.connect(self.unsetTool)
+        # キャンバスウィンドウ上でのマウスイベントの設定
+        self.mouseEventSample = FeatureSelectionTool(self.canvas)
 
 
     def initGui(self):
@@ -58,53 +58,53 @@ class FeatureSelectSample:
 
     # このサンプル以外のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
-        self.action.setChecked(False)
+        if not isinstance(tool, FeatureSelectSample):
+            try:
+                self.mouseEventSample.featureIdentified.disconnect(self.editAttribute)
+            except Exception:
+                pass
 
+            self.iface.layerTreeView().currentLayerChanged.disconnect(self.changeLayer)
 
-    def exitFunc(self):
-        self.iface.layerTreeView().currentLayerChanged.disconnect(self.changeLayer)
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.canvas.unsetMapTool(self.mouseEventSample)
 
-        try:
-            self.layer.selectionChanged.disconnect(self.editAttribute) 
-        except Exception:
-            pass
-        
-        self.canvas.setMapTool(self.previousMapTool)
-        self.action.setChecked(False)
+            self.action.setChecked(False)
 
 
     def execSample(self):
         if self.action.isChecked():
             self.layer = self.iface.activeLayer()
 
-            if (self.layer == None) or (type(self.layer) is not qgis.core.QgsVectorLayer):
+            if (self.layer == None) or (type(self.layer) is not qgis._core.QgsVectorLayer):
                 QMessageBox.about(None, '警告', 'ベクタレイヤを選択してから実行してください')
                 self.action.setChecked(False)
                 return
 
-            self.iface.layerTreeView().currentLayerChanged.connect(self.changeLayer) # アクティブレイヤが変更された時に呼ぶメソッドを登録
-            self.iface.actionSelect().trigger()                                      # ツールバーの「地物選択」のアイコンが押された状態になる
-            self.layer.selectionChanged.connect(self.editAttribute)                  # 選択フューチャーを変更した時に呼ぶメソッドを登録
             self.previousMapTool = self.canvas.mapTool()
+            self.canvas.setMapTool(self.mouseEventSample)
+            self.canvas.mapToolSet.connect(self.unsetTool)
+
+            self.iface.layerTreeView().currentLayerChanged.connect(self.changeLayer) # アクティブレイヤが変更された時に呼ぶメソッドを登録
+            self.mouseEventSample.setLayer(self.iface.activeLayer())
+            self.mouseEventSample.featureIdentified.connect(self.editAttribute)
         else:
-            self.exitFunc()
+            self.mouseEventSample.featureIdentified.disconnect(self.editAttribute)
+            self.iface.layerTreeView().currentLayerChanged.disconnect(self.changeLayer)
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.canvas.unsetMapTool(self.mouseEventSample)
+            self.canvas.setMapTool(self.previousMapTool)
 
 
     # フューチャーを一つ選択した時に呼ばれる。
-    def editAttribute(self):
-        features = self.layer.selectedFeatures()
-
-        if len(features) == 0:
-            return
-
-        if len(features) != 1:
-            QMessageBox.information(None, '警告', 'フューチャーを1つ選択してください')
-            return
+    def editAttribute(self, feature):
+        self.layer.removeSelection() 
+        self.layer.select(feature.id()) 
 
         self.layer.startEditing() # レイヤを編集状態にする
 
         # 選択しているフューチャーの属性フォーム表示
-        self.attdlg = self.iface.getFeatureForm(self.layer, features[0])
+        self.attdlg = self.iface.getFeatureForm(self.layer, feature)
         self.attdlg.setMode(qgis.gui.QgsAttributeEditorContext.SingleEditMode)
         self.attdlg.finished.connect(self.commitEdit)
         self.attdlg.show()
@@ -123,8 +123,15 @@ class FeatureSelectSample:
         if (layer == None) or (type(layer) is not qgis.core.QgsVectorLayer):
             return
 
-        # 選択前のレイヤにつながっていたeditAttributeを切って、選択後のレイヤにつなげる
         self.layer.removeSelection()
-        self.layer.selectionChanged.disconnect(self.editAttribute)
         self.layer = layer
-        self.layer.selectionChanged.connect(self.editAttribute)
+        self.mouseEventSample.setLayer(self.layer)
+
+
+class FeatureSelectionTool(qgis.gui.QgsMapToolIdentifyFeature):
+    def __init__(self, canvas):
+        self.canvas = canvas
+        qgis.gui.QgsMapToolIdentifyFeature.__init__(self, self.canvas)
+
+    def keyPressEvent( self, e ):
+        pass

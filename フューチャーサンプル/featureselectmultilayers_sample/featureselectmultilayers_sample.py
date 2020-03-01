@@ -45,8 +45,6 @@ class FeatureSelectMultiLayersSample:
         self.menu_pos = 'サンプル フューチャー選択'
         # キャンバス上のマウスイベント設定
         self.mouseEventSample = RectangleMapTool(self.iface.mapCanvas())
-        # このサンプル以外のアイコンを押した場合の設定
-        self.canvas.mapToolSet.connect(self.unsetTool)
 
 
     def initGui(self):
@@ -65,16 +63,21 @@ class FeatureSelectMultiLayersSample:
 
 
     def unsetTool(self, tool):
-        self.action.setChecked(False)
+        if not isinstance(tool, FeatureSelectMultiLayersSample):
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
+            self.action.setChecked(False)
 
 
     def execSample(self):
-        if not self.action.isChecked():
-            self.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
-            self.iface.mapCanvas().setMapTool(self.previousMapTool)
-        else:
+        if self.action.isChecked():
             self.previousMapTool = self.iface.mapCanvas().mapTool()
             self.iface.mapCanvas().setMapTool(self.mouseEventSample)
+            self.canvas.mapToolSet.connect(self.unsetTool)
+        else:
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.iface.mapCanvas().unsetMapTool(self.mouseEventSample)
+            self.iface.mapCanvas().setMapTool(self.previousMapTool)
 
 
 class RectangleMapTool(qgis.gui.QgsMapToolEmitPoint):

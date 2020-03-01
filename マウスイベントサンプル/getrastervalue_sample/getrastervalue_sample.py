@@ -45,8 +45,6 @@ class GetRasterValueSample:
         self.menu_pos = 'サンプル マウスイベント'
         # キャンバスウィンドウ上でのマウスイベントの設定
         self.mouseEventSample = MouseEventSample(self.iface, self.canvas)
-        # このサンプル以外のアイコンを押した場合の設定
-        self.canvas.mapToolSet.connect(self.unsetTool)
 
 
     def initGui(self):
@@ -66,7 +64,10 @@ class GetRasterValueSample:
 
     # このサンプル以外のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
+        print('aaa')
         if not isinstance(tool, MouseEventSample):
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.canvas.unsetMapTool(self.mouseEventSample)
             self.action.setChecked(False)
 
 
@@ -74,10 +75,12 @@ class GetRasterValueSample:
         if self.action.isChecked():
             self.previousMapTool = self.canvas.mapTool()
             self.canvas.setMapTool(self.mouseEventSample)
+            self.canvas.mapToolSet.connect(self.unsetTool)
         else:
+            print('bbb')
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
             self.canvas.unsetMapTool(self.mouseEventSample)
             self.canvas.setMapTool(self.previousMapTool)
-            self.action.setChecked(False)
 
 
 class MouseEventSample(qgis.gui.QgsMapTool):

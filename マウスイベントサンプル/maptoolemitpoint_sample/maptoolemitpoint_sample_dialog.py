@@ -44,22 +44,15 @@ class MapToolEmitPointSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint(self.canvas)
 
 
-    def unsetTool(self):
-        try:
-            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
-            self.canvas.unsetMapTool(self.mouseEventSample)
-
-            self.canvas.mapToolSet.disconnect(self.unsetTool)
-            self.pushButton_Exec.setChecked(False)
-            self.pushButton_Exec.setText('実行')
-
-        except: # 一度もpushExecを通らずにこの関数が呼ばれた場合のため
-            pass
+    def unsetTool(self, tool):
+        self.pushButton_Exec.setChecked(False)
 
 
     def closeEvent(self, e):
-        self.unsetTool()
- 
+        try:
+            self.pushButton_Exec.setChecked(False)
+        except:
+            pass
 
     def pushClose(self):
         self.close()
@@ -75,7 +68,11 @@ class MapToolEmitPointSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             self.canvas.mapToolSet.connect(self.unsetTool)
             self.pushButton_Exec.setText('実行中')
         else:
-            self.unsetTool()
+            self.pushButton_Exec.setText('実行')
+
+            self.canvas.mapToolSet.disconnect(self.unsetTool)
+            self.canvas.unsetMapTool(self.mouseEventSample)
+            self.mouseEventSample.canvasClicked.disconnect(self.mouseClick)
 
 
     def canvasMoveEvent(self, event):

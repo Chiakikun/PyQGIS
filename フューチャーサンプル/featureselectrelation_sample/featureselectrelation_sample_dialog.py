@@ -41,7 +41,7 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         super(FeatureSelectRelationSampleDialog, self).__init__(parent)
         self.setupUi(self)
 
-        self.iface = self.iface
+        self.iface = qgis.utils.iface
         self.canvas = self.iface.mapCanvas()
 
 
@@ -50,16 +50,6 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
 
     def closeEvent(self, e):
-        # 実行ボタン解除しないで終了した場合のため
-        try:
-            qgis.core.QgsProject.instance().relationManager().removeRelation(self.rel)
-        except:
-            pass
-        try:
-            self.parentLayer.selectionChanged.disconnect(self.showChildren)
-        except:
-            pass
-
         QSettings().setValue("/Qgis/attributeTableBehavior", self.oldsetting)
         self.pushButton.setChecked(False)
 
@@ -113,15 +103,10 @@ class FeatureSelectRelationSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             self.iface.setActiveLayer(self.parentLayer)
 
         else:
-            try: # 終了時にボタンを押したままだとここを通ってしまうので...
-                self.iface.actionSelect().setChecked(False)
-
-                # リレーションを削除
-                qgis.core.QgsProject.instance().relationManager().removeRelation(self.rel)
-
-                self.parentLayer.selectionChanged.disconnect(self.showChildren)
-            except:
-                pass
+            # リレーションを削除
+            qgis.core.QgsProject.instance().relationManager().removeRelation(self.rel)
+            
+            self.parentLayer.selectionChanged.disconnect(self.showChildren)
 
 
     def showChildren(self):
