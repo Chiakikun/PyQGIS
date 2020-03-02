@@ -59,10 +59,12 @@ class FeatureSelectIntersectSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
 
     def changeSelect(self, string):
+        if self.comboSelectLayer.currentText() == '': return
         self.selectLayer = qgis.core.QgsProject.instance().mapLayersByName(self.comboSelectLayer.currentText())[0]
 
 
     def changeTarget(self, string):
+        if self.comboTargetLayer.currentText() == '': return
         self.targetLayer = qgis.core.QgsProject.instance().mapLayersByName(self.comboTargetLayer.currentText())[0]
         
         # このレイヤのフューチャーに交差するself.selectLayerのフューチャーを取得したいので、
