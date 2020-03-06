@@ -74,7 +74,11 @@ class RubberBandSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
             self.myRubberBand = None
         else:
-            self.myRubberBand.reset(True)
+            try: # 右クリックしてmyRubberBandを解放していた場合は例外発生するので。
+                self.myRubberBand.reset(True)
+            except:
+                pass
+
             self.pushButton_Exec.setText('実行')
 
             self.canvas.mapToolSet.disconnect(self.unsetTool)
