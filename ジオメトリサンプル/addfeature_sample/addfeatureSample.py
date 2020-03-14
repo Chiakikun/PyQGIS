@@ -21,14 +21,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QPoint
+from qgis.PyQt.QtCore import QSettings, QPoint, Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .addfeatureSample_dialog import AddFeatureSampleDialog
+from .initdialog import initDialog
 import os.path
 
 
@@ -70,22 +71,21 @@ class AddFeatureSample:
     def run(self):
         """Run method that performs all the real work"""
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = AddFeatureSampleDialog(self.iface, self.iface.mainWindow()) # self.iface.mainWindow()を渡すと、ダイアログがQGISの後ろに隠れないようになります
+        # 設定ダイアログ
+        self.initDialog = initDialog(self.iface, self.iface.mainWindow())
+        self.initDialog.show()
 
-        # 邪魔にならない場所にダイアログを表示させたいので
-        pos = self.canvas.mapToGlobal(QPoint( 0, 0 ))
-        self.dlg.move(pos.x(), pos.y())
-
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
+        result = self.initDialog.exec_()
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+            layerName = self.initDialog.layerName
+            userName = self.initDialog.userName
+
+            if layerName == '':
+                QMessageBox.about(self.iface.mainWindow(), "警告", "編集するレイヤ名を入力してください")
+                return
+
+            # プラグイン実行
+            pos = self.canvas.mapToGlobal(QPoint( 0, 0 ))
+            self.dlg = AddFeatureSampleDialog(self.iface, layerName, userName, self.iface.mainWindow())
+            self.dlg.move(pos.x(), pos.y())
+            self.dlg.show()

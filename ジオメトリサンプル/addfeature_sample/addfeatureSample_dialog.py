@@ -25,6 +25,7 @@ from qgis.PyQt import QtCore, QtGui
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
+from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtGui import QColor
 import os
 import qgis.core
@@ -36,16 +37,26 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, layerName, userName, parent=None):
         super(AddFeatureSampleDialog, self).__init__(parent)
         self.setupUi(self)
 
         self.canvas = iface.mapCanvas()
 
-        # 仮想レイヤ作成
-        self.vlyr = qgis.core.QgsVectorLayer("MultiPolygon?&crs=epsg:4326&field=name:string&field=size:double", "サンプルレイヤ", "memory")
         # キャンバスウィンドウ上でのマウスイベントの設定
         self.mouseEventSample = qgis.gui.QgsMapToolEmitPoint(self.canvas)
+
+        self.layer = qgis.core.QgsProject.instance().mapLayersByName(layerName)[0]
+
+        # 対象レイヤにフィールド「更新者」を追加する
+        field_index = self.layer.fields().indexFromName('更新者')
+        if field_index == -1:
+            self.layer.startEditing()
+            self.layer.dataProvider().addAttributes([qgis.core.QgsField('更新者', QVariant.String)])
+            self.layer.commitChanges()
+
+        self.objType = self.layer.geometryType()
+        self.userName = userName
 
 
     def unsetTool(self):
@@ -100,7 +111,7 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
     def mouseClick(self, currentPos, clickedButton ):
         # 地物の最初の一点目
         if clickedButton == QtCore.Qt.LeftButton and self.myRubberBand == None:
-            self.myRubberBand = qgis.gui.QgsRubberBand( self.canvas, qgis.core.QgsWkbTypes.PolygonGeometry )
+            self.myRubberBand = qgis.gui.QgsRubberBand( self.canvas, self.objType )
             self.myRubberBand.setColor( QColor(78, 97, 114, 190) )
             self.myRubberBand.addPoint( qgis.core.QgsPointXY(currentPos) )
 
@@ -112,32 +123,29 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         if clickedButton == QtCore.Qt.RightButton:
             # フィールド設定
             qf = qgis.core.QgsFields()
-            for field in self.vlyr.fields():
+            for field in self.layer.fields():
                 qf.append(qgis.core.QgsField(str(field.name()), typeName=field.typeName()))
             record = qgis.core.QgsFeature(qf) 
 
             # ラバーバンドで作成した地物をセットする
+            if self.myRubberBand != None: self.myRubberBand.removeLastPoint() # 右クリックした時のカーソル位置のポイントは含めない
             self.myRubberBands.append(self.myRubberBand)
-            mpol = []
-            for i in range(0, len(self.myRubberBands)):
-                if self.myRubberBands[i] == None: continue
-                mpol.append([[]])
-                for pnts in self.myRubberBands[i].asGeometry().asPolygon(): 
-                    for pnt in pnts:
-                        mpol[len(mpol)-1][0].append(pnt)
-                self.canvas.scene().removeItem(self.myRubberBands[i])
-            record.setGeometry(qgis.core.QgsGeometry().fromMultiPolygonXY(mpol)) 
-
+            if self.objType == qgis.core.QgsWkbTypes.GeometryType.PolygonGeometry:
+                record.setGeometry(self.RubberBandsToPolygon())
+            elif self.objType == qgis.core.QgsWkbTypes.GeometryType.LineGeometry:
+                record.setGeometry(self.RubberBandsToLine())
+            elif self.objType == qgis.core.QgsWkbTypes.GeometryType.PointGeometry:
+                record.setGeometry(self.RubberBandsToPoint())
 
             # 属性をセットする
-            record.setAttributes([str(datetime.now()), 0])
+            record['更新者'] = self.userName
 
             # 作成したレコードをレイヤに追加
-            self.vlyr.dataProvider().addFeatures([record])
-            self.vlyr.updateExtents() # これが無いと『レイヤの領域にズーム』した時に、レイヤの最初のオブジェクト部分しかズームされない
+            self.layer.dataProvider().addFeatures([record])
+            self.layer.updateExtents() # これが無いと『レイヤの領域にズーム』した時に、レイヤの最初のオブジェクト部分しかズームされない
 
             # キャンバスにオブジェクトを表示する      
-            qgis.core.QgsProject.instance().addMapLayers([self.vlyr])
+            qgis.core.QgsProject.instance().addMapLayers([self.layer])
             self.canvas.refreshAllLayers()
 
             self.myRubberBand = None
@@ -149,6 +157,9 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
         if self.myRubberBand == None:
             return
 
+        if self.objType == qgis.core.QgsWkbTypes.GeometryType.PointGeometry:
+            return
+
         if self.myRubberBand.numberOfVertices() == 2:
             self.myRubberBand = None
             return
@@ -157,3 +168,37 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.myRubberBands.append(self.myRubberBand)
         self.myRubberBand = None 
+
+
+    def RubberBandsToPolygon(self):
+        mpol = []
+        for i in range(0, len(self.myRubberBands)):
+            if self.myRubberBands[i] == None: continue
+            mpol.append([[]])
+            for pnts in self.myRubberBands[i].asGeometry().asPolygon(): 
+                for pnt in pnts:
+                    mpol[len(mpol)-1][0].append(pnt)
+            self.canvas.scene().removeItem(self.myRubberBands[i])
+        return qgis.core.QgsGeometry().fromMultiPolygonXY(mpol) 
+
+
+    def RubberBandsToLine(self):
+        mline = []
+        for i in range(0, len(self.myRubberBands)):
+            if self.myRubberBands[i] == None: continue
+            mline.append([])
+            for pnts in self.myRubberBands[i].asGeometry().asPolyline(): 
+                mline[len(mline)-1].append(pnts)
+            self.canvas.scene().removeItem(self.myRubberBands[i])
+        return qgis.core.QgsGeometry().fromMultiPolylineXY(mline) 
+
+
+    def RubberBandsToPoint(self):
+        mpnt = []
+        for i in range(0, len(self.myRubberBands)):
+            if self.myRubberBands[i] == None: continue
+            for pnt in self.myRubberBands[i].asGeometry().asMultiPoint():
+                mpnt.append(pnt)
+            self.canvas.scene().removeItem(self.myRubberBands[i])
+        print(mpnt)
+        return qgis.core.QgsGeometry().fromMultiPointXY(mpnt) 
