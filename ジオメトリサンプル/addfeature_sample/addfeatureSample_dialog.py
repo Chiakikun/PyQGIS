@@ -66,6 +66,9 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
     def closeEvent(self, e):
         try:
             self.pushButton_Exec.setChecked(False)
+            for i in range(0, len(self.myRubberBands)):
+                self.canvas.scene().removeItem(self.myRubberBands[i])
+            self.myRubberBand.reset(True)
         except:
             pass
  
@@ -88,6 +91,8 @@ class AddFeatureSampleDialog(QtWidgets.QDialog, FORM_CLASS):
             self.myRubberBands = [] # 使用済みのラバーバンドを格納しておく場所
         else:
             try: # 右クリックしてmyRubberBandを解放していた場合は例外発生するので。
+                for i in range(0, len(self.myRubberBands)):
+                    self.canvas.scene().removeItem(self.myRubberBands[i])
                 self.myRubberBand.reset(True)
             except:
                 pass

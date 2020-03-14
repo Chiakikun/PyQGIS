@@ -44,7 +44,7 @@ class AddFeatureSample:
         self.plugin_dir = os.path.dirname(__file__)
 
         # プラグインの登録場所
-        self.menu_pos = 'サンプル マウスイベント'
+        self.menu_pos = 'サンプル ジオメトリ'
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -53,7 +53,7 @@ class AddFeatureSample:
 
     def initGui(self):
         icon = QIcon(self.plugin_dir+'/icon.png')
-        self.action = QAction(icon, 'ラバーバンドサンプル', self.iface.mainWindow())
+        self.action = QAction(icon, '追加サンプル', self.iface.mainWindow())
         self.action.triggered.connect(self.run) # アイコンを押下した時に実行されるメソッドを登録
         #self.iface.addToolBarIcon(self.action) # ツールバーにアイコンを表示させたいなら#外して
         self.iface.addPluginToMenu(self.menu_pos, self.action)
