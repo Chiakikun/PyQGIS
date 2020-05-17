@@ -27,13 +27,17 @@ from .resources import *
 import os.path
 import qgis.core;
 
-class NodialogSkelton:
+class NodialogSkelton(qgis.gui.QgsMapTool):
 
     def setConnect(self):
+        maptool = self # 場合によって書き換えて
+
+        self.canvas.setMapTool(maptool)
         self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
 
 
     def disConnect(self):
+
         # 上手い方法が見つからなかった
         try:
           self.canvas.mapToolSet.disconnect(self.unsetTool)
@@ -43,7 +47,7 @@ class NodialogSkelton:
 
     # このプラグイン実行中に他のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
-        if not isinstance(tool, None):
+        if not isinstance(tool, NodialogSkelton):
             self.disConnect()
             self.action.setChecked(False)
 
@@ -58,6 +62,8 @@ class NodialogSkelton:
         self.canvas = self.iface.mapCanvas()
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
+
+        qgis.gui.QgsMapTool.__init__(self, self.canvas)
 
 
     def initGui(self):
