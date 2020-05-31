@@ -38,9 +38,8 @@ execSampleの以下の部分を書き換える
 ベクタレイヤの地物を一つ選択した状態でプラグインを実行すると、編集ダイアログが表示されます。
 """
 import qgis.core
-from PyQt5.QtCore import QObject
 
-class AttributeEditorSample(QObject):
+class AttributeEditorSample:
 
     def editAttribute(self, layer):
         features = layer.selectedFeatures()
@@ -70,7 +69,6 @@ class AttributeEditorSample(QObject):
 
         self.canvas = canvas
         self.iface = iface
-        QObject.__init__(self, self.canvas)
 
     def __del__(self):
         pass
