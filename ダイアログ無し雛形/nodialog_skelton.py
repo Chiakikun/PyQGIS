@@ -51,7 +51,7 @@ class NodialogSkelton(qgis.gui.QgsMapTool):
         self.menu_pos = '雛形' # プラグインの登録場所
         self.plugin_name = 'ダイアログ無し雛形'
         self.toolbar = True
-        self.checkable = False
+        self.checkable = True
 
         # Save reference to the QGIS interface
         self.iface = iface
