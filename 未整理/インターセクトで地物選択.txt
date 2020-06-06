@@ -1,0 +1,20 @@
+使い方例
+    selectLayer = QgsProject.instance().mapLayersByName(ポイントのレイヤ名)[0]
+    intersectLayer = QgsProject.instance().mapLayersByName(ポリゴンのレイヤ名)[0]
+    self.intersectSelect(selectLayer, intersectLayer)
+
+
+from qgis.core import QgsFeatureRequest, QgsProject
+
+    def intersectSelect(self, selectLayer, intersectLayer):
+        selectLayer.removeSelection()
+
+        sel = []
+        for feat in intersectLayer.selectedFeatures():
+            geom = feat.geometry()
+
+            cands = selectLayer.getFeatures(QgsFeatureRequest().setFilterRect(geom.boundingBox()))
+            for sf in cands:
+                if geom.intersects(sf.geometry()):
+                    sel.append(sf.id())
+            selectLayer.select(sel)

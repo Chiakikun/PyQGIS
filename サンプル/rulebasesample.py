@@ -68,6 +68,7 @@ class RuleBaseSample:
         self.layer.triggerRepaint()
 
 
+    # indexで指定したルールの条件式を変更します
     def setExpression(self, expression, index):
         self.root_rule.children()[index].setFilterExpression(expression)
         self.layer.setRenderer(self.renderer)
