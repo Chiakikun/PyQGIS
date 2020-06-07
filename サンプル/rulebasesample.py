@@ -2,7 +2,6 @@
 """
 /***************************************************************************
  RuleBaseSample
-        git sha              : $Format:%H$
         copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
@@ -17,33 +16,32 @@
  ***************************************************************************/
 使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
 
-プラグインのフォルダにこのファイルを置く
+①プラグインのフォルダにこのファイルを置く
 
-インポート
+②インポートに以下を追加する
 from .rulebasesample import RuleBaseSample
 
-execSampleの以下の部分を書き換える
-        else:
-            pass
-から
-        else:
-            self.rulebase = RuleBaseSample(self.iface, self.canvas, self.iface.activeLayer())
-            style_rules = (
-                ('Target', '$id = 0', '#ff0000'), # $idが0なら赤
-                ('Other',  'ELSE',    '#ffffff') # それ以外は白
-            )
-            self.rulebase.initColors(style_rules)
+③__init__のcheckableをFalseにする
+self.checkable = False
+
+④startを以下で置き換える
+    def start(self):
+        self.rulebase = RuleBaseSample(self.iface.activeLayer())
+        style_rules = (
+            ('Target', '$id = 0', '#ff0000'), # $idが0なら赤
+            ('Other',  'ELSE',    '#ffffff') # それ以外は白
+        )
+        self.rulebase.initColors(style_rules)
 """
 from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsSymbol, QgsRuleBasedRenderer
-
+import qgis
+from qgis.core import *
+from qgis.gui  import *
 
 class RuleBaseSample:
 
-    def __init__(self, iface, canvas, layer):
+    def __init__(self, layer):
 
-        self.canvas = canvas
-        self.iface = iface
         self.layer = layer
 
         symbol = QgsSymbol.defaultSymbol(self.layer.geometryType())
@@ -73,7 +71,3 @@ class RuleBaseSample:
         self.root_rule.children()[index].setFilterExpression(expression)
         self.layer.setRenderer(self.renderer)
         self.layer.triggerRepaint()
-
-
-    def __del__(self):
-        pass

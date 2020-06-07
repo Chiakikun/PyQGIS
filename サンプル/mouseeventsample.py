@@ -2,8 +2,7 @@
 """
 /***************************************************************************
  MouseEventSample
-        git sha              : $Format:%H$
-        copyright            : (C) 2019 by Chiakikun
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -17,27 +16,31 @@
  ***************************************************************************/
 使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
 
-このファイルをプラグインのフォルダに置く
+①プラグインのフォルダにこのファイルを置く
 
-インポート
+②インポートに以下を追加する
 from .mouseeventsample import MouseEventSample
 
-setConnectの「maptool = self」を以下に書き換える
+③setConnectの「maptool = self」を以下に書き換える
         maptool = MouseEventSample(self.canvas)
-"""
-import qgis.core
-from qgis.PyQt import QtCore
 
-class MouseEventSample(qgis.gui.QgsMapTool):
+④Pythonコンソールを表示して、プラグインを実行する。
+"""
+import qgis
+from qgis.core import *
+from qgis.gui  import *
+from qgis.PyQt.QtCore import Qt
+
+class MouseEventSample(QgsMapTool):
     def __init__(self, canvas):
-        qgis.gui.QgsMapTool.__init__(self, canvas)
+        QgsMapTool.__init__(self, canvas)
 
     def canvasMoveEvent(self, event):
         print('マウス移動:' + str(self.toMapCoordinates(event.pos())))
 
     def canvasPressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == Qt.LeftButton:
             print('左クリック!' + str(self.toMapCoordinates(event.pos())))
 
-        if event.button() == QtCore.Qt.RightButton:
+        if event.button() == Qt.RightButton:
             print('右クリック!' + str(self.toMapCoordinates(event.pos())))

@@ -2,8 +2,7 @@
 """
 /***************************************************************************
  NodialogSkelton
-        git sha              : $Format:%H$
-        copyright            : (C) 2019 by Chiakikun
+        copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -25,45 +24,45 @@ from qgis.PyQt.QtWidgets import QAction
 from .resources import *
 
 import os.path
-import qgis.core;
+import qgis
+from qgis.core import *
+from qgis.gui  import *
 
-class NodialogSkelton(qgis.gui.QgsMapTool):
 
-    def setConnect(self):
+class NodialogSkelton(QgsMapTool):
+
+    def start(self):
         maptool = self # 場合によって書き換えて
 
         self.canvas.setMapTool(maptool)
         self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
 
 
-    def disConnect(self):
+    def finish(self):
         self.canvas.mapToolSet.disconnect(self.unsetTool)
+
+
+    def __init__(self, iface):
+        self.plugin_name = 'ダイアログ無し雛形' # プラグイン名
+        self.menu_pos    = '雛形'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
+        self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
+        self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
+
+        self.iface = iface
+        self.canvas = self.iface.mapCanvas()
+
+        QgsMapTool.__init__(self, self.canvas)
 
 
     # このプラグイン実行中に他のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
         if not isinstance(tool, NodialogSkelton):
-            self.disConnect()
+            self.finish()
             self.action.setChecked(False)
 
 
-    def __init__(self, iface):
-        self.menu_pos = '雛形' # プラグインの登録場所
-        self.plugin_name = 'ダイアログ無し雛形'
-        self.toolbar = True
-        self.checkable = True
-
-        # Save reference to the QGIS interface
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
-        # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
-
-        qgis.gui.QgsMapTool.__init__(self, self.canvas)
-
-
     def initGui(self):
-        icon = QIcon(self.plugin_dir+'/icon.png')
+        icon = QIcon(os.path.dirname(__file__)+'/icon.png')
         self.action = QAction(icon, self.plugin_name, self.iface.mainWindow())
         self.action.triggered.connect(self.execSample) # アイコンを押下した時に実行されるメソッドを登録
         self.action.setCheckable(self.checkable)       # Trueだとアイコンを押下したら次に押下するまで凹んだままになる
@@ -72,20 +71,20 @@ class NodialogSkelton(qgis.gui.QgsMapTool):
         self.iface.addPluginToMenu(self.menu_pos, self.action)
         
 
+    # このプラグインを無効にしたときに呼ばれる
     def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
         self.iface.removePluginMenu(self.menu_pos, self.action)
         self.iface.removeToolBarIcon(self.action)
 
 
-    # このツールのアイコンを押下したとき
+    # このツールのアイコンを押下したときに呼ばれる
     def execSample(self):
         if self.checkable:
             if self.action.isChecked(): # 凹状態になった
                 self.previousMapTool = self.canvas.mapTool()  # 現在のマップツールを退避
-                self.setConnect()
+                self.start()
             else:                       # 凸状態になった
-                self.disConnect()
+                self.finish()
                 self.canvas.setMapTool(self.previousMapTool)  # このツール実行前に戻す
         else:
-            pass
+            self.start()

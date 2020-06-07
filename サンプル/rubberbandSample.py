@@ -2,7 +2,6 @@
 """
 /***************************************************************************
  RubberBandSample
-        git sha              : $Format:%H$
         copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
@@ -17,36 +16,26 @@
  ***************************************************************************/
 使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
 
-プラグインのフォルダにこのファイルを置く
+①プラグインのフォルダにこのファイルを置く
 
-インポート
+②インポートに以下を追加する
 from .rubberbandSample import RubberBandSample
 
-nodialog_skelton.pyのメソッドを次に書き換える
-    def setConnect(self):
-        self.rubberbandSample = RubberBandSample(self.iface, self.canvas, qgis.core.QgsWkbTypes.LineGeometry)  # ラインの場合
-        self.canvas.setMapTool(self.rubberbandSample)  # このサンプルを登録
+③setConnectの「maptool = self」を以下に書き換える
+        maptool = RubberBandSample(self.iface, self.canvas, QgsWkbTypes.LineGeometry)  # ラインの場合
 
-        self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
-
-    def disConnect(self):
-        if self.rubberbandSample.isActive():
-            self.canvas.unsetMapTool(self.rubberbandSample)
-        try:
-            self.canvas.mapToolSet.disconnect(self.unsetTool)
-        except:
-            pass
 """
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 
-import qgis.gui
-from qgis.core import QgsPointXY
+import qgis
+from qgis.core import *
+from qgis.gui  import *
 
-class RubberBandSample(qgis.gui.QgsMapTool):
+class RubberBandSample(QgsMapTool):
 
     def __init__(self, iface, canvas, type): # type = QgsWkbTypes.PointGeometry, QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry
-        qgis.gui.QgsMapTool.__init__(self, canvas)
+        QgsMapTool.__init__(self, canvas)
 
         self.canvas = canvas
         self.iface = iface
@@ -69,7 +58,7 @@ class RubberBandSample(qgis.gui.QgsMapTool):
 
         # 地物の最初の一点目
         if event.button() == Qt.LeftButton and self.myRubberBand == None:
-            self.myRubberBand = qgis.gui.QgsRubberBand( self.canvas, self.type )
+            self.myRubberBand = QgsRubberBand( self.canvas, self.type )
             self.myRubberBand.setColor( QColor(255, 0, 0, 128) )
             self.myRubberBand.addPoint( QgsPointXY(currentPos) )
 

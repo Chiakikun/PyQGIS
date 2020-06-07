@@ -2,7 +2,6 @@
 """
 /***************************************************************************
  RelationSample
-        git sha              : $Format:%H$
         copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
@@ -17,33 +16,35 @@
  ***************************************************************************/
 使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
 
-プラグインのフォルダにこのファイルを置く
+①プラグインのフォルダにこのファイルを置く
 
-インポート
+②インポート部分に以下を追加する
 from .relationsample import RelationSample
 
-nodialog_skelton.pyのメソッドを次に書き換える
-
-    def setConnect(self):
+④startを以下で置き換える
+    def start(self):
         # 国土数値情報ダウンロードサービスからダウンロードできる行政区画と避難所を使う場合
-        parent = qgis.core.QgsProject.instance().mapLayersByName('行政区画')[0]
-        child = qgis.core.QgsProject.instance().mapLayersByName('避難所')[0]
-        self.rel = RelationSample(self.iface, self.canvas, parent, 'N03_007', child, 'p20_001')
+        parent = QgsProject.instance().mapLayersByName('行政区画')[0]
+        child =QgsProject.instance().mapLayersByName('避難所')[0]
+        self.rel = RelationSample(self.iface, parent, 'N03_007', child, 'p20_001')
 
 
-    def disConnect(self):
+⑤finishを以下で置き換える
+    def finish(self):
         self.rel = None
 
+⑥プラグインを実行したら、親レイヤ（ここでは行政区画）の地物を一つ選択すると、子レイヤ（ここでは避難所）の属性テーブルが表示される
 """
-from qgis.core import QgsProject, QgsRelation 
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.Qt import QSettings
+import qgis
+from qgis.core import *
+from qgis.gui  import *
 
 class RelationSample:
 
-    def __init__(self, iface, canvas, parentLayer, parentField, childLayer, childField):
+    def __init__(self, iface, parentLayer, parentField, childLayer, childField):
 
-        self.canvas = canvas
         self.iface = iface
 
         self.rel = QgsRelation()
@@ -70,17 +71,17 @@ class RelationSample:
         for c in self.rel.getRelatedFeatures(features[0]):
             child.select(c.id())
 
-        selectedlayer = self.iface.activeLayer()
+        selectedlayer = self.iface.activeLayer() # 退避
         try:
             # このプログラム実行中は属性テーブルは選択中のフューチャーしか表示しない
-            self.oldsetting = QSettings().value("/Qgis/attributeTableBehaviour")
-            QSettings().setValue("/Qgis/attributeTableBehavior", "ShowSelected")
+            self.oldsetting = QSettings().value('/Qgis/attributeTableBehaviour')
+            QSettings().setValue('/Qgis/attributeTableBehavior', 'ShowSelected')
 
             self.iface.setActiveLayer(child)
             self.iface.mainWindow().findChild(QtWidgets.QAction, 'mActionOpenTable' ).trigger()
         finally:
-            self.iface.setActiveLayer(selectedlayer)
-            QSettings().setValue("/Qgis/attributeTableBehavior", self.oldsetting)
+            self.iface.setActiveLayer(selectedlayer) # 戻す
+            QSettings().setValue('/Qgis/attributeTableBehavior', self.oldsetting)
 
 
     def __del__(self):

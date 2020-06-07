@@ -2,8 +2,6 @@
 """
 /***************************************************************************
  AttributeEditorSample
-        begin                : 2020-05-17
-        git sha              : $Format:%H$
         copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
@@ -18,26 +16,23 @@
  ***************************************************************************/
 使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
 
-プラグインのフォルダにこのファイルを置く
+①プラグインのフォルダにこのファイルを置く
 
-インポート
+②インポート部分に以下を追加する
 from .attributeeditorsample import AttributeEditorSample
 
-__init__のcheckableをFalseにする
+③__init__のcheckableをFalseにする
 self.checkable = False
 
-execSampleの以下の部分を書き換える
-        else:
-            pass
-から
-        else:
-            self.ae = AttributeEditorSample(self.iface, self.canvas)
-            self.ae.editAttribute(self.iface.activeLayer())
-に書き換え
+④startを以下で置き換える
+    def start(self):
+        self.ae = AttributeEditorSample(self.iface)
+        self.ae.editAttribute(self.iface.activeLayer())
 
-ベクタレイヤの地物を一つ選択した状態でプラグインを実行すると、編集ダイアログが表示されます。
+⑤ベクタレイヤの地物を一つ選択した状態でプラグインを実行する
 """
-import qgis.core
+import qgis
+from qgis.gui  import *
 
 class AttributeEditorSample:
 
@@ -52,7 +47,7 @@ class AttributeEditorSample:
 
         # 選択しているフューチャーの属性フォーム表示
         self.attdlg = self.iface.getFeatureForm(self.layer, features[0])
-        self.attdlg.setMode(qgis.gui.QgsAttributeEditorContext.SingleEditMode)
+        self.attdlg.setMode(QgsAttributeEditorContext.SingleEditMode)
         self.attdlg.finished.connect(self.commitEdit)
         self.attdlg.show()
 
@@ -65,10 +60,5 @@ class AttributeEditorSample:
         self.attdlg.finished.disconnect(self.commitEdit)
 
 
-    def __init__(self, iface, canvas):
-
-        self.canvas = canvas
+    def __init__(self, iface):
         self.iface = iface
-
-    def __del__(self):
-        pass
