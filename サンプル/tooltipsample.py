@@ -22,6 +22,7 @@
 from .tooltipsample import ToolTipSample
 
 ③startの「maptool = self」を以下に書き換える
+    maptool = ToolTipSample(self.canvas, 700)
 """
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QToolTip
