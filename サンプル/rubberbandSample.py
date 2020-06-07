@@ -21,7 +21,7 @@
 ②インポートに以下を追加する
 from .rubberbandSample import RubberBandSample
 
-③setConnectの「maptool = self」を以下に書き換える
+③startの「maptool = self」を以下に書き換える
         maptool = RubberBandSample(self.iface, self.canvas, QgsWkbTypes.LineGeometry)  # ラインの場合
 
 """

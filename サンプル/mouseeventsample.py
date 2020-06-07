@@ -21,7 +21,7 @@
 ②インポートに以下を追加する
 from .mouseeventsample import MouseEventSample
 
-③setConnectの「maptool = self」を以下に書き換える
+③startの「maptool = self」を以下に書き換える
         maptool = MouseEventSample(self.canvas)
 
 ④Pythonコンソールを表示して、プラグインを実行する。

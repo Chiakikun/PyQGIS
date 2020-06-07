@@ -21,7 +21,7 @@
 ②インポートに以下を追加する
 from .tooltipsample import ToolTipSample
 
-③setConnectの「maptool = self」を以下に書き換える
+③startの「maptool = self」を以下に書き換える
 """
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QToolTip
