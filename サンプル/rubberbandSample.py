@@ -23,16 +23,21 @@ from .rubberbandSample import RubberBandSample
 
 ③startの「maptool = self」を以下に書き換える
         maptool = RubberBandSample(self.iface, self.canvas, QgsWkbTypes.LineGeometry)  # ラインの場合
+        maptool.getObject.connect(self.printGeometry)
 
+④次のメソッドを追加する
+    def printGeometry(self, geom):
+        print(geom)
 """
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
-
+from PyQt5.Qt import pyqtSignal
 import qgis
 from qgis.core import *
 from qgis.gui  import *
 
 class RubberBandSample(QgsMapTool):
+    getObject = pyqtSignal(QgsGeometry)
 
     def __init__(self, iface, canvas, type): # type = QgsWkbTypes.PointGeometry, QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry
         QgsMapTool.__init__(self, canvas)
@@ -71,7 +76,8 @@ class RubberBandSample(QgsMapTool):
             if self.myRubberBand == None:
                 return
 
-            # geom = self.myRubberBand.asGeometry() # ラバーバンドのオブジェクト取り出し
+            self.getObject.emit(self.myRubberBand.asGeometry()) # ラバーバンドのオブジェクト取り出し
+
 
             self.canvas.scene().removeItem(self.myRubberBand) # ラバーバンドで描いた図形はもう必要ないので消す
             self.myRubberBand = None
