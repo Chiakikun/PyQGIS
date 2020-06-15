@@ -29,6 +29,10 @@ finishを次に変更する
     def finish(self):
         self.lt = None
 
+次のメソッドを追加する
+    def clear(self):
+        self.lt = None
+        self.action.setChecked(False)
 """
 import qgis
 from qgis.core import *
