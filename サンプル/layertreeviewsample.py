@@ -33,11 +33,16 @@ finishを次に変更する
 import qgis
 from qgis.core import *
 from qgis.gui  import *
+from PyQt5.Qt import QObject, pyqtSignal
 
-class LayerTreeViewSample:
+class LayerTreeViewSample(QObject): # signal-slot使いたいので
+    cleared = pyqtSignal()
 
     def changeLayer(self, layer):
-        if (layer == None):
+
+        if (layer == None): # レイヤウィンドウに何も無い状態
+            self.currentlayer = None
+            self.cleared.emit()
             return
 
         if self.currentlayer != None:
@@ -48,6 +53,8 @@ class LayerTreeViewSample:
 
 
     def __init__(self, iface):
+        super(LayerTreeViewSample, self).__init__()
+
         self.iface = iface
 
         self.currentlayer = self.iface.layerTreeView().currentLayer()
