@@ -21,11 +21,14 @@
 インポート
 from .editgeometrysample import EditGeometrySample
 
-①startの「maptool = self」を以下に書き換える
+①startを以下に書き換える
     def start(self):
         self.maptool = EditGeometrySample(self.iface, self.canvas, 'move') # 移動させる場合
         self.maptool.setLayer(self.iface.activeLayer())
         self.maptool.featureIdentified.connect(self.selectedFeature)
+
+        self.canvas.setMapTool(self.maptool)
+        self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
 
 ②次のメソッドを追加する
     def selectedFeature(self, feature):        
