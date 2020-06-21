@@ -23,9 +23,9 @@ from .editgeometrysample import EditGeometrySample
 
 ①startの「maptool = self」を以下に書き換える
     def start(self):
-        maptool = EditGeometrySample(self.iface, self.canvas)
-        maptool.setLayer(self.iface.activeLayer())
-        maptool.featureIdentified.connect(self.selectedFeature)
+        self.maptool = EditGeometrySample(self.iface, self.canvas, 'move') # 移動させる場合
+        self.maptool.setLayer(self.iface.activeLayer())
+        self.maptool.featureIdentified.connect(self.selectedFeature)
 
 ②次のメソッドを追加する
     def selectedFeature(self, feature):        
@@ -60,9 +60,9 @@ class EditGeometrySample(QgsMapToolIdentifyFeature):
         if self.myRubberBand == None: return
 
         if event.button() == QtCore.Qt.LeftButton:
-            self.layer.startEditing()
+            # self.layer.startEditing() # バックアップは取りましたか？取らずに実行しても責任は取れませんよ？バックアップできたなら、#を外してください
             self.changeGeometry(self.layer.selectedFeatures()[0])
-            self.layer.commitChanges()
+            # self.layer.commitChanges() # ここも
 
         self.myRubberBand.reset()
         self.myRubberBand = None
@@ -96,9 +96,9 @@ class EditGeometrySample(QgsMapToolIdentifyFeature):
 
         dstpos = e.pos()
 
-        if edittype == 'move':
+        if self.edittype == 'move':
             self.moveObject(self.srcpos, dstpos)
-        elif edittype == 'scale':
+        elif self.edittype == 'scale':
             self.scaleObject(self.srcpos, dstpos)
         else:
             self.rotateObject(self.srcpos, dstpos)
