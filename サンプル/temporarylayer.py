@@ -67,6 +67,11 @@ class TemporaryLayer:
 
         QgsProject.instance().addMapLayer(self.layer)
 
+
+    def getFeatures(self):
+        return self.layer.getFeatures()
+
+
     def addFeature(self, geometry, attrs):
 
             qf = QgsFields()
