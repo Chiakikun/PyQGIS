@@ -72,6 +72,10 @@ class TemporaryLayer:
         return self.layer.getFeatures()
 
 
+    def selectByExpression(self, query):
+        return self.layer.selectByExpression(query)
+
+
     def addFeature(self, geometry, attrs):
 
             qf = QgsFields()
