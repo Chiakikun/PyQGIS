@@ -68,8 +68,11 @@ class TemporaryLayer:
         QgsProject.instance().addMapLayer(self.layer)
 
 
-    def getFeatures(self):
-        return self.layer.getFeatures()
+    def getFeatures(self, arg=None):
+        if arg == None:
+            return self.layer.getFeatures()
+        else:
+            return self.layer.getFeatures(arg)
 
 
     def selectByExpression(self, query):
