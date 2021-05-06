@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- Nodialog Skelton
-                             -------------------
-        begin                : 2019-11-19
-        copyright            : (C) 2019 by unemployed
+ BoundingBox Sample
         email                : chiakikungm@gmail.com
         git sha              : $Format:%H$
  ***************************************************************************/
@@ -23,5 +20,5 @@
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    from .nodialog_skelton import NodialogSkelton
-    return NodialogSkelton(iface)
+    from .boundingbox_sample import BoundingBoxSample
+    return BoundingBoxSample(iface)

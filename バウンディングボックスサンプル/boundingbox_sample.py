@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- NodialogSkelton
-        copyright            : (C) 2020 by Chiakikun
+ BoundingBox Sample
+        copyright            : (C) 2021 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -29,7 +29,7 @@ from qgis.core import *
 from qgis.gui  import *
 
 
-class NodialogSkelton(QgsMapTool):
+class BoundingBoxSample(QgsMapTool):
 
     def start(self):
 
@@ -69,8 +69,8 @@ class NodialogSkelton(QgsMapTool):
 
 
     def __init__(self, iface):
-        self.plugin_name = 'ダイアログ無し雛形' # プラグイン名
-        self.menu_pos    = '雛形'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
+        self.plugin_name = 'バウンディングボックス作成サンプル' # プラグイン名
+        self.menu_pos    = 'サンプル'           # プラグインの登録場所
         self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
         self.checkable   = False                # Trueならプラグイン実行中はアイコンが凹んだままになる
 
@@ -82,7 +82,7 @@ class NodialogSkelton(QgsMapTool):
 
     # このプラグイン実行中に他のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
-        if not isinstance(tool, NodialogSkelton):
+        if not isinstance(tool, BoundingBoxSample):
             self.finish()
             self.action.setChecked(False)
 
