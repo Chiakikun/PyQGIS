@@ -14,20 +14,6 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-使い方例（『https://github.com/Chiakikun/PyQGIS/blob/master/ダイアログ無し雛形/nodialog_skelton.py』に組み込む場合）
-
-①プラグインのフォルダにこのファイルを置く
-
-②インポートに以下を追加する
-from .rubberbandSample import RubberBandSample
-
-③startの「maptool = self」を以下に書き換える
-        maptool = RubberBandSample(self.iface, self.canvas, QgsWkbTypes.LineGeometry)  # ラインの場合
-        maptool.getObject.connect(self.printGeometry)
-
-④次のメソッドを追加する
-    def printGeometry(self, geom):
-        print(geom)
 """
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor

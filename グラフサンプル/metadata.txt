@@ -3,7 +3,7 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Nodialog Skelton
+name=Graph Sample
 qgisMinimumVersion=3.0
 description=
 version=0.1

@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- NodialogSkelton
+ GraphSample
         copyright            : (C) 2020 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
@@ -36,7 +36,7 @@ from .getrasterpixelvalue import GetRasterPixelValue
 import datetime
 import math
 
-class NodialogSkelton(QgsMapTool):
+class GraphSample(QgsMapTool):
 
     # lineLLを垂直に横断する点列を作成する
     def addOdansen(self, lineLL, key):
@@ -60,8 +60,6 @@ class NodialogSkelton(QgsMapTool):
         # cntは番号付けのために使っている。
         def odansen(startpnt, endpnt, length, cnt):
             center = destination(startpnt, angle(startpnt, endpnt), length)
-            self.hol.addFeature(center, []) # 試
-            return
             rad = angle(startpnt, endpnt) + (-90 * math.pi / 180)
 
             for i in range(-self._odanlinelength, self._odanlinelength + self._odanpointspan, self._odanpointspan):
@@ -129,7 +127,7 @@ class NodialogSkelton(QgsMapTool):
         # このプログラム使うときはこの辺を調整してください
         self._llcrs = 4326
         self._xycrs = 2451 # 千葉県のDEMでテストしたので9系になってます。
-        self._savedir = 'c:\\users\\〇〇\\desktop\\pic\\' # 横断図の保存先
+        self._savedir = 'c:\\users\\〇〇\\desktop\\□□\\' # 横断図の保存先
         self._odanlinespan   = 100 # 横断線の間隔
         self._odanlinelength = 200 # 横断線の片側の長さ
         self._odanpointspan  = 10  # 横断線上のサンプリング間隔
@@ -156,8 +154,8 @@ class NodialogSkelton(QgsMapTool):
 
 
     def __init__(self, iface):
-        self.plugin_name = 'ダイアログ無し雛形' # プラグイン名
-        self.menu_pos    = '雛形'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
+        self.plugin_name = 'グラフサンプル' # プラグイン名
+        self.menu_pos    = 'サンプル'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
         self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
         self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
 
@@ -169,7 +167,7 @@ class NodialogSkelton(QgsMapTool):
 
     # このプラグイン実行中に他のアイコンが押された場合、アイコンを元の状態に戻す
     def unsetTool(self, tool):
-        if not isinstance(tool, NodialogSkelton):
+        if not isinstance(tool, GraphSample):
             self.finish()
             self.action.setChecked(False)
 
