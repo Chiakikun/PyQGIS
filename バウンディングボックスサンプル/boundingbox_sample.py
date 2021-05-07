@@ -32,22 +32,30 @@ from qgis.gui  import *
 class BoundingBoxSample(QgsMapTool):
 
     def start(self):
-
+        # バウンディングボックス作成元
         srclayer = self.iface.activeLayer()
         if (srclayer == None) or (type(srclayer) is not QgsVectorLayer):
             QMessageBox.about(None, '警告', 'ベクタレイヤを選択してから実行してください')
             self.action.setChecked(False)
             return
-        dstlayer = QgsVectorLayer("Polygon?crs=epsg:4326&field=pref:string", "サンプルレイヤ", "memory")
+        # バウンディングボックス投入先
+        fieldstr = ''
+        for field in srclayer.fields():
+            fieldstr = fieldstr + '&field=' + str(field.name()) + ':' + str(field.typeName())
+        crsstr = srclayer.sourceCrs().authid()
+        dstlayer = QgsVectorLayer("Polygon?crs=" + crsstr + fieldstr, "サンプルレイヤ", "memory")
 
         for f in srclayer.getFeatures():
 
             # 属性
             qf = QgsFields()
-            for field in dstlayer.fields():
+            ## フィールド
+            for field in srclayer.fields():
                 qf.append(QgsField(str(field.name()), typeName=field.typeName()))
             record = QgsFeature(qf)
-            record[0] = f[1]
+            ## 値投入
+            for i in range(0, f.fields().count()):
+                record[i] = f[i]
             # オブジェクト
             mpol = f.geometry().asMultiPolygon()
             bnds = []
