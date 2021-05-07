@@ -41,23 +41,23 @@ class BoundingBoxSample(QgsMapTool):
         dstlayer = QgsVectorLayer("Polygon?crs=epsg:4326&field=pref:string", "サンプルレイヤ", "memory")
 
         for f in srclayer.getFeatures():
+
+            # 属性
+            qf = QgsFields()
+            for field in dstlayer.fields():
+                qf.append(QgsField(str(field.name()), typeName=field.typeName()))
+            record = QgsFeature(qf)
+            record[0] = f[1]
+            # オブジェクト
             mpol = f.geometry().asMultiPolygon()
-
+            bnds = []
             for i in range(0, len(mpol)):
-                bnd = QgsGeometry.fromRect(QgsGeometry().fromPolygonXY(mpol[i]).boundingBox())
-
-                for b in bnd.asPolygon():
-                    # 属性
-                    qf = QgsFields()
-                    for field in dstlayer.fields():
-                        qf.append(QgsField(str(field.name()), typeName=field.typeName()))
-                    record = QgsFeature(qf)
-                    record[0] = f[1]
-                    # オブジェクト
-                    record.setGeometry(QgsGeometry.fromPolygonXY([b]))
-                    # レイヤに追加
-                    dstlayer.dataProvider().addFeatures([record])
-                    dstlayer.updateExtents()
+                bnds.append(QgsGeometry.fromRect(QgsGeometry().fromPolygonXY(mpol[i]).boundingBox()).asPolygon())
+            newobj = QgsGeometry.fromMultiPolygonXY(bnds)
+            record.setGeometry(newobj)
+            # レイヤに追加
+            dstlayer.dataProvider().addFeatures([record])
+            dstlayer.updateExtents()
 
         # キャンバスにオブジェクトを表示する      
         QgsProject.instance().addMapLayers([dstlayer])
