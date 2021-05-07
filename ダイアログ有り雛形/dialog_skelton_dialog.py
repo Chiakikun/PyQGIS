@@ -34,8 +34,11 @@ class DialogSkeltonDialog(QtWidgets.QDialog, FORM_CLASS):
 
 
     def disConnect(self):
-        self.canvas.mapToolSet.disconnect(self.unsetTool)
-
+        # 上手い方法が見つからなかった
+        try:
+          self.canvas.mapToolSet.disconnect(self.unsetTool)
+        except:
+          pass
 
     def unsetTool(self, tool):
         self.unset = True
@@ -74,5 +77,5 @@ class DialogSkeltonDialog(QtWidgets.QDialog, FORM_CLASS):
 
             # プラグイン実行中に他のマップツールを選択した場合、
             # ここを実行すると実行ボタン押下直前のマップツールが選択状態になってしまうので。
-            if not self.unset:
+            if ('self.unset') in locals() and (not self.unset):
                 self.canvas.setMapTool(self.previousMapTool)

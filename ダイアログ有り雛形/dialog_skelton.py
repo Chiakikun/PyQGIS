@@ -29,44 +29,35 @@ import os.path
 class DialogSkelton:
 
     def __init__(self, iface):
-        self.menu_pos = '雛形' # プラグインの登録場所
-        self.plugin_name = 'ダイアログ有り雛形'
-        self.toolbar = True
+        self.plugin_name = 'ダイアログ無し雛形' # プラグイン名
+        self.menu_pos    = '雛形'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
+        self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
+        self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
 
-        # Save reference to the QGIS interface
         self.iface = iface
         self.canvas = self.iface.mapCanvas()
-        # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
 
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
-
-
-    def initGui(self):
-        icon = QIcon(self.plugin_dir+'/icon.png')
-        self.action = QAction(icon, self.plugin_name, self.iface.mainWindow())
-        self.action.triggered.connect(self.run) # アイコンを押下した時に実行されるメソッドを登録
-        if self.toolbar:
-            self.iface.addToolBarIcon(self.action) # ツールバーにアイコンを表示させたいなら#外して
-        self.iface.addPluginToMenu(self.menu_pos, self.action)
-
-        # will be set False in run()
         self.first_start = True
 
 
+    def initGui(self):
+        icon = QIcon(os.path.dirname(__file__)+'/icon.png')
+        self.action = QAction(icon, self.plugin_name, self.iface.mainWindow())
+        self.action.triggered.connect(self.run)        # アイコンを押下した時に実行されるメソッドを登録
+        self.action.setCheckable(self.checkable)       # Trueだとアイコンを押下したら次に押下するまで凹んだままになる
+        if self.toolbar:
+            self.iface.addToolBarIcon(self.action)     # ツールバーにこのツールのアイコンを表示する
+        self.iface.addPluginToMenu(self.menu_pos, self.action)
+
+
+    # このプラグインを無効にしたときに呼ばれる
     def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
         self.iface.removePluginMenu(self.menu_pos, self.action)
         self.iface.removeToolBarIcon(self.action)
 
 
+    # このツールのアイコンを押下したときに呼ばれる
     def run(self):
-        """Run method that performs all the real work"""
-
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
             self.dlg = DialogSkeltonDialog(self.iface, self.action, self.iface.mainWindow()) # self.iface.mainWindow()を渡すと、ダイアログがQGISの後ろに隠れないようになります
@@ -75,12 +66,4 @@ class DialogSkelton:
         pos = self.canvas.mapToGlobal(QPoint( 0, 0 ))
         self.dlg.move(pos.x(), pos.y())
 
-        # show the dialog
         self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass

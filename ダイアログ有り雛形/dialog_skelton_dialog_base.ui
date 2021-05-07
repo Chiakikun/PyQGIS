@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogSkeltonDialogBase</class>
+ <widget class="QDialog" name="DialogSkeltonDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>305</width>
+    <height>72</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog Skelton</string>
+  </property>
+  <widget class="QPushButton" name="pushButton_Exec">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>30</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>実行</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_Close">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>30</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>終了</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_Exec</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>DialogSkeltonDialogBase</receiver>
+   <slot>pushExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>37</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>30</x>
+     <y>16</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_Close</sender>
+   <signal>clicked()</signal>
+   <receiver>DialogSkeltonDialogBase</receiver>
+   <slot>pushClose()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>226</x>
+     <y>18</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>pushExec()</slot>
+  <slot>pushClose()</slot>
+ </slots>
+</ui>
