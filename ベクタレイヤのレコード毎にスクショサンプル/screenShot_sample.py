@@ -30,7 +30,7 @@ class ScreenShotSample:
         self.plugin_name = 'ダイアログ無し雛形' # プラグイン名
         self.menu_pos    = '雛形'               # プラグインの登録場所(このサンプルの場合、メニューの「プラグイン/雛形/ダイアログ無し雛形」)
         self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
-        self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
+        self.checkable   = False                # Trueならプラグイン実行中はアイコンが凹んだままになる
 
         self.iface = iface
         self.canvas = self.iface.mapCanvas()

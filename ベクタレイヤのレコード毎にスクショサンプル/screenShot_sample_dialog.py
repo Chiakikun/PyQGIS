@@ -52,7 +52,7 @@ class ScreenShotSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
 
     def setNextFeatureExtent(self): # この関数が終わるとself.exportMapが呼ばれます(リフレッシュが終わるので)
-        self.canvas.zoomToFeatureIds( self.layer, [self.ids[-1]] ) # -1 しているのは、exportMapでpopしているから
+        self.canvas.zoomToFeatureIds( self.layer, [self.ids[-1]] )
         self.canvas.zoomScale(self.scale) # 縮尺 
 
 
