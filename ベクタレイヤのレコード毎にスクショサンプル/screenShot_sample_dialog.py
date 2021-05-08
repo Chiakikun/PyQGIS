@@ -35,16 +35,17 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class ScreenShotSampleDialog(QtWidgets.QDialog, FORM_CLASS):
 
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, action, parent=None):
         super(ScreenShotSampleDialog, self).__init__(parent)
         self.setupUi(self)
 
         self.iface = iface
         self.canvas = iface.mapCanvas()
+        self.action = action
 
 
     def exportMap(self):
-        self.canvas.saveAsImage( "d:/{}.png".format( self.ids.pop() ) )
+        self.canvas.saveAsImage( "c:/users/me/desktop/{}.png".format( self.ids.pop() ) )
 
         if self.ids:
             self.setNextFeatureExtent()
