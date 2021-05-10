@@ -59,7 +59,7 @@ class IntersectSelectSample(QgsMapTool):
         selectLayer = QgsProject.instance().mapLayersByName('〇〇')[0]
         intersectLayer = QgsProject.instance().mapLayersByName('〇〇')[0]
 
-        self.intersectSelect2(selectLayer, intersectLayer)
+        self.intersectSelect1(selectLayer, intersectLayer)
 
 
     def finish(self):
