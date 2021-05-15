@@ -70,7 +70,7 @@ class RulebaseSample(QgsMapTool):
         self.plugin_name = 'ルールによる色設定サンプル' # プラグイン名
         self.menu_pos    = 'サンプル'           # プラグインの登録場所
         self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
-        self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
+        self.checkable   = False                 # Trueならプラグイン実行中はアイコンが凹んだままになる
 
         # ルール (ラベル, 式, 色)
         self.style_rules = (
