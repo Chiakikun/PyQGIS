@@ -51,7 +51,7 @@ class TemporaryLayerSample(QgsMapTool):
         # 一時レイヤ作成
         typestr  = 'Polygon?'
         fieldstr = '&field=〇〇:string&field=□□:double&field=××:date'
-        crsstr   = '&crs=EPSG:4612'
+        crsstr   = '&crs=' + str(QgsProject.instance().crs().authid())
         layername= '一時レイヤ'
         self.tmplayer = QgsVectorLayer(typestr + crsstr + fieldstr, layername, "memory")
         QgsProject.instance().addMapLayer(self.tmplayer)
