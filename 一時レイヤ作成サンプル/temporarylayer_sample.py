@@ -56,6 +56,9 @@ class TemporaryLayerSample(QgsMapTool):
         self.tmplayer = QgsVectorLayer(typestr + crsstr + fieldstr, layername, "memory")
         QgsProject.instance().addMapLayer(self.tmplayer)
 
+        # ラバーバンドのための設定
+        self.objtype     = QgsWkbTypes.PolygonGeometry # QgsWkbTypes.PointGeometry, QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry
+
         maptool = RubberBandClass(self.iface, self.canvas, self.objtype)
         maptool.getObject.connect(self.setGeometry)
 
@@ -68,9 +71,7 @@ class TemporaryLayerSample(QgsMapTool):
 
 
     def __init__(self, iface):
-        self.objtype     = QgsWkbTypes.PolygonGeometry # QgsWkbTypes.PointGeometry, QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry
-
-        self.plugin_name = 'ラバーバンドサンプル' # プラグイン名
+        self.plugin_name = '一時レイヤ作成サンプル' # プラグイン名
         self.menu_pos    = 'サンプル'             # プラグインの登録場所
         self.toolbar     = True                   # Trueならツールバーにアイコンを表示する
         self.checkable   = True                   # Trueならプラグイン実行中はアイコンが凹んだままになる
@@ -144,9 +145,13 @@ class RubberBandClass(QgsMapTool):
 
         # 地物の最初の一点目
         if event.button() == Qt.LeftButton and self.myRubberBand == None:
-            self.myRubberBand = QgsRubberBand( self.canvas, self.type )
-            self.myRubberBand.setColor( QColor(255, 0, 0, 128) )
-            self.myRubberBand.addPoint( QgsPointXY(currentPos) )
+            if self.type == QgsWkbTypes.PointGeometry:
+                self.getObject.emit(QgsGeometry.fromPointXY(currentPos))
+                return
+            else:
+                self.myRubberBand = QgsRubberBand( self.canvas, self.type )
+                self.myRubberBand.setColor( QColor(255, 0, 0, 128) )
+                self.myRubberBand.addPoint( QgsPointXY(currentPos) )
 
         # 地物の二点目以降
         if event.button() == Qt.LeftButton and self.myRubberBand.numberOfVertices() > 0:
