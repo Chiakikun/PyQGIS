@@ -84,10 +84,10 @@ class RelationSample(QgsMapTool):
         self.toolbar     = True                 # Trueならツールバーにアイコンを表示する
         self.checkable   = True                 # Trueならプラグイン実行中はアイコンが凹んだままになる
 
-        self.referencedLayerName  = '〇〇〇' # 参照元のレイヤ名
-        self.referencingLayerName = '□□□' # 参照先のレイヤ名
-        self.referencedField  = '△△△'     # 参照先とのリンクに使うフィールド名
-        self.referencingField = '×××'     # 参照元とのリンクに使うフィールド名
+        self.referencedLayerName  = '〇〇〇' # 被参照のレイヤ名
+        self.referencingLayerName = '□□□' # 参照元のレイヤ名
+        self.referencedField  = '△△△'     # 参照元とのリンクに使うフィールド名
+        self.referencingField = '×××'     # 被参照とのリンクに使うフィールド名
 
         self.iface = iface
         self.canvas = self.iface.mapCanvas()
