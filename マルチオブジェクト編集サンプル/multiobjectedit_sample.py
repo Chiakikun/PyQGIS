@@ -119,7 +119,7 @@ class MultiObjectEditClass(QgsMapToolIdentifyFeature):
         if self.myRubberBand == None: return
 
         if event.button() == QtCore.Qt.LeftButton:
-            # self.layer.startEditing() # バックアップは取りましたか？取らずに実行しても責任は取れませんよ？バックアップできたなら、#を外してください
+            # self.layer.startEditing() # バックアップは取りましたか？バックアップできたなら、#を外してください
             self.changeGeometry(self.layer.selectedFeatures()[0])
             # self.layer.commitChanges() # ここも
 
