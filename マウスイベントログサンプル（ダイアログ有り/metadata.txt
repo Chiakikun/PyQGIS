@@ -3,14 +3,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=MapTool Sample
+name=MouseEventlog Sample
 qgisMinimumVersion=3.0
-description=MapToolを使ったサンプルです。
+description=
 version=0.1
 author=Chiakikun
 email=chiakikungm@gmail.com
 
-#about=MapToolを使ったマウスイベントサンプルです。
+#about=
 
 #tracker=http://bugs
 #repository=http://repo
