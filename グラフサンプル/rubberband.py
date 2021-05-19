@@ -2,7 +2,7 @@
 """
 /***************************************************************************
  RubberBandSample
-        copyright            : (C) 2020 by Chiakikun
+        copyright            : (C) 2021 by Chiakikun
         email                : chiakikungm@gmail.com
  ***************************************************************************/
 
@@ -22,10 +22,10 @@ import qgis
 from qgis.core import *
 from qgis.gui  import *
 
-class RubberBandSample(QgsMapTool):
+class RubberBand(QgsMapTool):
     getObject = pyqtSignal(QgsGeometry)
 
-    def __init__(self, iface, canvas, type): # type = QgsWkbTypes.PointGeometry, QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry
+    def __init__(self, iface, canvas, type):
         QgsMapTool.__init__(self, canvas)
 
         self.canvas = canvas
@@ -49,9 +49,13 @@ class RubberBandSample(QgsMapTool):
 
         # 地物の最初の一点目
         if event.button() == Qt.LeftButton and self.myRubberBand == None:
-            self.myRubberBand = QgsRubberBand( self.canvas, self.type )
-            self.myRubberBand.setColor( QColor(255, 0, 0, 128) )
-            self.myRubberBand.addPoint( QgsPointXY(currentPos) )
+            if self.type == QgsWkbTypes.PointGeometry:
+                self.getObject.emit(QgsGeometry.fromPointXY(currentPos))
+                return
+            else:
+                self.myRubberBand = QgsRubberBand( self.canvas, self.type )
+                self.myRubberBand.setColor( QColor(255, 0, 0, 128) )
+                self.myRubberBand.addPoint( QgsPointXY(currentPos) )
 
         # 地物の二点目以降
         if event.button() == Qt.LeftButton and self.myRubberBand.numberOfVertices() > 0:

@@ -30,8 +30,7 @@ from qgis.gui  import *
 
 import matplotlib.pyplot as plt
 import numpy as np
-from .rubberbandSample import RubberBandSample
-from .temporarylayer import TemporaryLayer
+from .rubberband import RubberBand
 from .getrasterpixelvalue import GetRasterPixelValue
 import datetime
 import math
@@ -67,7 +66,7 @@ class GraphSample(QgsMapTool):
                 llpnt = transformCRS(xypnt, self._xycrs, self._llcrs)
 
                 elev = self.gr.getValueInterpolation(llpnt.asPoint())
-                self.hol.addFeature(llpnt, [key, cnt, i, elev])
+                self.addFeature(self.hol, llpnt, [key, cnt, i, elev])
 
          
         lineXY = transformCRS(lineLL, self._llcrs, self._xycrs) # 描画したラインは緯度経度の座標なので、平面直角座標に変換する
@@ -106,9 +105,9 @@ class GraphSample(QgsMapTool):
             return feature['pointcount']
 
         key = datetime.datetime.now().strftime('%Y%m%d%H%M%S') # 縦断線と横断線を紐付けるキー
-        self.ver.addFeature(geom, [key]) # 縦断線レイヤに、描画したラインを追加
-        self.addOdansen(geom, key)       # 描画したラインを横断する点列を横断戦レイヤに追加
-
+        self.addFeature(self.ver, geom, [key]) # 縦断線レイヤに、描画したラインを追加
+        self.addOdansen(geom, key)             # 描画したラインを横断する点列を横断戦レイヤに追加
+        
         # グラフ作成
         features = list(self.hol.getFeatures(QgsFeatureRequest().setFilterExpression('"key"='+'\'' + key + '\'')))
         linenumbers = sorted(set([f['linecount'] for f in features]))
@@ -123,22 +122,54 @@ class GraphSample(QgsMapTool):
             plt.savefig(self._savedir + str(linenode[0]['key']) + '_' + str(linenumber) + '.png')
 
 
+    # 一時レイヤ作成
+    def createTemporaryLayer(self, layername, type, fieldsstr):
+        epsg = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
+        layer = QgsVectorLayer(type + '?&crs='+epsg+fieldsstr, layername, 'memory')
+
+        QgsProject.instance().addMapLayer(layer)
+        return layer
+
+
+    # レイヤにレコード追加
+    def addFeature(self, layer, geometry, attrs):
+        qf = QgsFields()
+        for field in layer.fields():
+            qf.append(QgsField(str(field.name()), typeName=field.typeName()))
+        record = QgsFeature(qf) 
+
+        # 地物をセットする
+        record.setGeometry(geometry) 
+
+        # 属性をセットする
+        record.setAttributes(attrs)
+
+        # 作成したレコードをレイヤに追加
+        layer.dataProvider().addFeatures([record])
+        layer.updateExtents() # これが無いと『レイヤの領域にズーム』した時に、レイヤの最初のオブジェクト部分しかズームされない
+
+        self.canvas.refreshAllLayers()
+
+
     def start(self):
         # このプログラム使うときはこの辺を調整してください
         self._llcrs = 4326
         self._xycrs = 2451 # 千葉県のDEMでテストしたので9系になってます。
-        self._savedir = 'c:\\users\\〇〇\\desktop\\□□\\' # 横断図の保存先
+        self._savedir = 'c:\\users\\me\\desktop\\pic\\' # 横断図の保存先
         self._odanlinespan   = 100 # 横断線の間隔
         self._odanlinelength = 200 # 横断線の片側の長さ
         self._odanpointspan  = 10  # 横断線上のサンプリング間隔
 
+        if self.iface.activeLayer() is not qgis.core.QgsRasterLayer:
+            QMessageBox.about('ラスタのレイヤを選択してください')
+            return
         self.gr = GetRasterPixelValue(self.iface.activeLayer())
 
-        maptool = RubberBandSample(self.iface, self.canvas, QgsWkbTypes.LineGeometry)
+        maptool = RubberBand(self.iface, self.canvas, QgsWkbTypes.LineGeometry)
         maptool.getObject.connect(self.setFeature)
 
-        self.ver = TemporaryLayer(self.iface, self.canvas, '縦断線', 'LineString', ['key:string'])
-        self.hol = TemporaryLayer(self.iface, self.canvas, '横断線', 'Point', ['key:string','linecount:integer','pointcount:integer', 'elev:double'])
+        self.ver = self.createTemporaryLayer('縦断線', 'LineString', '&field=key:string')
+        self.hol = self.createTemporaryLayer('横断線', 'Point',      '&field=key:string&field=linecount:integer&field=pointcount:integer&field=elev:double')
 
         self.canvas.setMapTool(maptool)
         self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
