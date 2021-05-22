@@ -18,7 +18,7 @@
 
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction,QMessageBox
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -155,14 +155,11 @@ class GraphSample(QgsMapTool):
         # このプログラム使うときはこの辺を調整してください
         self._llcrs = 4326
         self._xycrs = 2451 # 千葉県のDEMでテストしたので9系になってます。
-        self._savedir = 'c:\\users\\me\\desktop\\pic\\' # 横断図の保存先
+        self._savedir = 'c:\\users\\〇〇\\desktop\\pic\\' # 横断図の保存先
         self._odanlinespan   = 100 # 横断線の間隔
         self._odanlinelength = 200 # 横断線の片側の長さ
         self._odanpointspan  = 10  # 横断線上のサンプリング間隔
 
-        if self.iface.activeLayer() is not qgis.core.QgsRasterLayer:
-            QMessageBox.about('ラスタのレイヤを選択してください')
-            return
         self.gr = GetRasterPixelValue(self.iface.activeLayer())
 
         maptool = RubberBand(self.iface, self.canvas, QgsWkbTypes.LineGeometry)
