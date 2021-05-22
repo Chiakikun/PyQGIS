@@ -160,13 +160,26 @@ class GraphSample(QgsMapTool):
         self._odanlinelength = 200 # 横断線の片側の長さ
         self._odanpointspan  = 10  # 横断線上のサンプリング間隔
 
-        self.gr = GetRasterPixelValue(self.iface.activeLayer())
+        layer = self.iface.activeLayer()
+        if type(layer) != qgis.core.QgsRasterLayer:
+            QMessageBox.about(None, 'エラー', 'ラスタレイヤを選択してから実行してください。')
+            self.action.setChecked(False)
+            self.canvas.setMapTool(self.previousMapTool)  # このツール実行前に戻す
+            return
+        self.gr = GetRasterPixelValue(layer)
 
         maptool = RubberBand(self.iface, self.canvas, QgsWkbTypes.LineGeometry)
         maptool.getObject.connect(self.setFeature)
 
-        self.ver = self.createTemporaryLayer('縦断線', 'LineString', '&field=key:string')
-        self.hol = self.createTemporaryLayer('横断線', 'Point',      '&field=key:string&field=linecount:integer&field=pointcount:integer&field=elev:double')
+        if len(QgsProject.instance().mapLayersByName('縦断線')) == 0:
+            self.ver = self.createTemporaryLayer('縦断線', 'LineString', '&field=key:string')
+        else:
+            self.ver = QgsProject.instance().mapLayersByName('縦断線')[0]
+
+        if len(QgsProject.instance().mapLayersByName('横断線')) == 0:
+            self.hol = self.createTemporaryLayer('横断線', 'Point', '&field=key:string&field=linecount:integer&field=pointcount:integer&field=elev:double')
+        else:
+            self.hol = QgsProject.instance().mapLayersByName('横断線')[0]
 
         self.canvas.setMapTool(maptool)
         self.canvas.mapToolSet.connect(self.unsetTool) # このサンプル実行中に他のアイコンを押した場合
