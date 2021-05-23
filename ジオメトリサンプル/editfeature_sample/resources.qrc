@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/featureselect_sample" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
