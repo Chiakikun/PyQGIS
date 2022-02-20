@@ -1,0 +1,21 @@
+[general]
+name=Tool Form sample
+qgisMinimumVersion=3.0
+description=
+version=0.1
+author=Chiakikun
+email=chiakikungm@gmail.com
+
+hasProcessingProvider=no
+
+tags=python,sample
+
+category=Plugins
+icon=icon.png
+
+experimental=True
+
+deprecated=False
+
+server=False
+
